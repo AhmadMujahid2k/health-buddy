@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* ── Health Buddy brand ─────────────────────────────────────────────
+   Brand: teal ("Buddy Teal" #0d9488). Second chart series: orange #ea580c.
+   Chart pair validated colour-blind safe in light + dark (dataviz validator).
+   Status colours (good / warn / bad) are reserved for state, never for series. */
+
+:root {
+  --background: #f4f7f7;
+  --foreground: #0f1f22;
+  --card: #ffffff;
+  --card-2: #f8fafa;
+  --muted: #5b6b6e;
+  --line: #e2e8e8;
+  --brand: #0d9488;
+  --brand-strong: #0f766e;
+  --brand-soft: #e6f6f4;
+  --chart-1: #0d9488;
+  --chart-2: #ea580c;
+  --good: #15803d;
+  --good-soft: #e8f6ec;
+  --warn: #b45309;
+  --warn-soft: #fdf3e2;
+  --bad: #dc2626;
+  --bad-soft: #fdecec;
+  --sidebar: #0b1f22;
+  --sidebar-line: #16343a;
+  --sidebar-text: #a9c4c6;
+  --shadow: 0 1px 2px rgb(15 31 34 / 0.04), 0 4px 16px rgb(15 31 34 / 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #081214;
+    --foreground: #e4eff0;
+    --card: #0f1c1f;
+    --card-2: #132326;
+    --muted: #8aa2a5;
+    --line: #1d3236;
+    --brand: #14b8a6;
+    --brand-strong: #2dd4bf;
+    --brand-soft: #0f2f2e;
+    --chart-1: #0d9488;
+    --chart-2: #ea580c;
+    --good: #4ade80;
+    --good-soft: #10291a;
+    --warn: #fbbf24;
+    --warn-soft: #2d2410;
+    --bad: #f87171;
+    --bad-soft: #2f1414;
+    --sidebar: #061012;
+    --sidebar-line: #13282c;
+    --sidebar-text: #8fb0b3;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-good: var(--good);
+  --color-good-soft: var(--good-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-line: var(--sidebar-line);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-brand-300: #5eead4;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, select, textarea {
+  font-size: 16px; /* stops iOS Safari zooming into inputs */
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.input {
+  width: 100%;
+  background: var(--card-2);
+  border: 1px solid var(--line);
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 0.65rem;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+  font-size: 0.925rem;
+  background: var(--brand);
+  color: white;
+  transition: background 0.15s, opacity 0.15s;
+}
+.btn:hover { background: var(--brand-strong); }
+.btn:disabled { opacity: 0.5; }
+.btn-ghost {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--line);
+}
+.btn-ghost:hover { background: var(--card-2); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
