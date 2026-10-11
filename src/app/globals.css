@@ -29,8 +29,9 @@
   --shadow: 0 1px 2px rgb(15 31 34 / 0.04), 0 4px 16px rgb(15 31 34 / 0.05);
 }
 
+/* Dark: follows the system unless the user picked a theme (Sidebar → theme switch sets <html data-theme>) */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --background: #081214;
     --foreground: #e4eff0;
     --card: #0f1c1f;
@@ -53,6 +54,30 @@
     --sidebar-text: #8fb0b3;
     --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
   }
+}
+
+:root[data-theme="dark"] {
+  --background: #081214;
+  --foreground: #e4eff0;
+  --card: #0f1c1f;
+  --card-2: #132326;
+  --muted: #8aa2a5;
+  --line: #1d3236;
+  --brand: #14b8a6;
+  --brand-strong: #2dd4bf;
+  --brand-soft: #0f2f2e;
+  --chart-1: #0d9488;
+  --chart-2: #ea580c;
+  --good: #4ade80;
+  --good-soft: #10291a;
+  --warn: #fbbf24;
+  --warn-soft: #2d2410;
+  --bad: #f87171;
+  --bad-soft: #2f1414;
+  --sidebar: #061012;
+  --sidebar-line: #13282c;
+  --sidebar-text: #8fb0b3;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
 }
 
 @theme inline {
@@ -79,6 +104,10 @@
   --color-brand-300: #5eead4;
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
+
+html { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark; } }
 
 body {
   background: var(--background);

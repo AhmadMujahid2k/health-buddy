@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, LayoutDashboard, Menu, PlusCircle, Settings, UtensilsCrossed, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -41,6 +42,7 @@ function Sidebar({ widget, onNavigate }: { widget: React.ReactNode; onNavigate?:
       </nav>
       <div className="mt-auto space-y-3">
         {widget}
+        <ThemeToggle />
         <p className="px-2 text-[11px] text-sidebar-text/50">Local · private · runs on this laptop</p>
       </div>
     </div>
