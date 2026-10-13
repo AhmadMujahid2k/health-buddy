@@ -36,7 +36,8 @@ export async function estimateSections(sections: { meal: Meal; text: string }[],
         const meal: Meal = (MEALS as string[]).includes(it.meal) ? (it.meal as Meal) : unknown[0].meal;
         const { alias, kcal_per_unit, protein_per_unit, meal: _m, ...draft } = it;
         // already known under this name/alias: don't add a clashing food
-        const known = findFoodByAlias(alias) ?? findFoodByAlias(it.name);
+        const known =
+          [...alias.split(","), it.name].map((a) => findFoodByAlias(a.trim())).find(Boolean) ?? null;
         const food_id =
           known?.id ??
           upsertFood({

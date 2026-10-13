@@ -26,7 +26,7 @@ const SCHEMA = {
         type: "object",
         properties: {
           name: { type: "string", description: "Short food name, e.g. 'Aloo matar rice'" },
-          alias: { type: "string", description: "Lowercase words the user would type for this food, e.g. 'aloo matar rice'" },
+          alias: { type: "string", description: "Comma-separated lowercase names the user might type for this food, e.g. 'aloo matar rice,aloo matar chawal'" },
           qty: { type: "number" },
           unit: { type: "string", description: "Simple unit, e.g. piece, cup, bowl, plate, spoon, slice" },
           kcal_per_unit: { type: "number" },
