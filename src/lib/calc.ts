@@ -43,12 +43,37 @@ export function today(): string {
   return new Date(d.getTime() - off).toISOString().slice(0, 10);
 }
 
-export function goalPathOn(p: Profile, date: string): number | null {
+export type Milestone = { label: string | null; weight: number; date: string; fromWeight: number; fromDate: string };
+
+/** The milestone that applies on `date`: the first one until its date passes, then the next one (if set). */
+export function activeMilestone(p: Profile, date: string): Milestone | null {
   if (p.milestone_weight == null || !p.milestone_date) return null;
-  const total = daysBetween(p.start_date, p.milestone_date);
+  const first: Milestone = {
+    label: p.milestone_label, weight: p.milestone_weight, date: p.milestone_date,
+    fromWeight: p.start_weight, fromDate: p.start_date,
+  };
+  if (date <= p.milestone_date || p.next_milestone_weight == null || !p.next_milestone_date) return first;
+  return {
+    label: p.next_milestone_label, weight: p.next_milestone_weight, date: p.next_milestone_date,
+    fromWeight: p.milestone_weight, fromDate: p.milestone_date,
+  };
+}
+
+/** The upcoming milestone after the active one, if any. */
+export function nextMilestone(p: Profile, date: string): Milestone | null {
+  const a = activeMilestone(p, date);
+  if (!a || a.date !== p.milestone_date || p.next_milestone_weight == null || !p.next_milestone_date) return null;
+  return activeMilestone(p, addDays(p.milestone_date, 1));
+}
+
+/** Planned weight on `date`: a straight line from the start to each milestone in turn. */
+export function goalPathOn(p: Profile, date: string): number | null {
+  const m = activeMilestone(p, date);
+  if (!m) return null;
+  const total = daysBetween(m.fromDate, m.date);
   if (total <= 0) return null;
-  const t = Math.min(Math.max(daysBetween(p.start_date, date), 0), total);
-  return p.start_weight - ((p.start_weight - p.milestone_weight) * t) / total;
+  const t = Math.min(Math.max(daysBetween(m.fromDate, date), 0), total);
+  return m.fromWeight - ((m.fromWeight - m.weight) * t) / total;
 }
 
 /**

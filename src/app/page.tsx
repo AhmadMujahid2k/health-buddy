@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getStats } from "@/lib/queries";
-import { bmi, bmiCategory, daysBetween, fmt, goalStatus, today } from "@/lib/calc";
+import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, goalStatus, nextMilestone, today } from "@/lib/calc";
 import type { DayStats, Profile } from "@/lib/types";
 import { Charts } from "@/components/Charts";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
@@ -55,17 +55,19 @@ async function Dashboard() {
   const b = bmi(p, current);
 
   const planned = last?.goalPath ?? null;
-  const status = goalStatus(current, planned, p.milestone_weight);
-  const daysLeft = p.milestone_date ? Math.max(0, daysBetween(t, p.milestone_date)) : null;
-  const kgLeft = p.milestone_weight != null ? Math.max(0, current - p.milestone_weight) : null;
+  const m = activeMilestone(p, t);
+  const nextM = nextMilestone(p, t);
+  const status = goalStatus(current, planned, m?.weight ?? null);
+  const daysLeft = m ? Math.max(0, daysBetween(t, m.date)) : null;
+  const kgLeft = m ? Math.max(0, current - m.weight) : null;
   const pace = daysLeft && kgLeft != null ? kgLeft / (daysLeft / 7) : null;
 
   const recent = stats.filter((s) => s.logged).slice(-7);
   const avg = (f: (s: DayStats) => number) => (recent.length ? recent.reduce((a, s) => a + f(s), 0) / recent.length : 0);
   const totalDeficit = stats.at(-1)?.cumDeficit ?? 0;
 
-  const goalTotal = p.milestone_weight != null ? p.start_weight - p.milestone_weight : 0;
-  const goalPct = goalTotal > 0 ? Math.min(100, Math.max(0, (lost / goalTotal) * 100)) : 0;
+  const goalTotal = m ? m.fromWeight - m.weight : 0;
+  const goalPct = m && goalTotal > 0 ? Math.min(100, Math.max(0, ((m.fromWeight - current) / goalTotal) * 100)) : 0;
   const good = status === "ON TRACK" || status === "GOAL REACHED";
   const ahead = planned != null ? planned - current : null;
 
@@ -114,13 +116,14 @@ async function Dashboard() {
           </div>
 
           {/* Milestone goal */}
-          {p.milestone_weight != null && p.milestone_date ? (
+          {m ? (
             <div className="card flex flex-col">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <h2 className="font-bold">🎯 {p.milestone_label ?? "Milestone"}</h2>
+                  <h2 className="font-bold">🎯 {m.label ?? "Milestone"}</h2>
                   <p className="text-xs text-muted">
-                    {fmt(p.milestone_weight, 1)} kg by {new Date(p.milestone_date + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}
+                    {fmt(m.weight, 1)} kg by {shortDate(m.date)}
+                    {nextM && <> · next: {fmt(nextM.weight, 1)} kg by {shortDate(nextM.date)}</>}
                   </p>
                 </div>
                 {status && (
@@ -132,9 +135,9 @@ async function Dashboard() {
               </div>
               <div className="mt-5">
                 <div className="mb-1.5 flex justify-between text-xs text-muted">
-                  <span>{fmt(p.start_weight, 1)} kg</span>
+                  <span>{fmt(m.fromWeight, 1)} kg</span>
                   <span className="font-semibold text-foreground">{fmt(goalPct, 0)}%</span>
-                  <span>{fmt(p.milestone_weight, 1)} kg</span>
+                  <span>{fmt(m.weight, 1)} kg</span>
                 </div>
                 <div className="h-2.5 overflow-hidden rounded-full bg-line">
                   <div className="h-full rounded-full bg-brand" style={{ width: `${goalPct}%` }} />
@@ -209,4 +212,8 @@ async function Dashboard() {
       </div>
     </>
   );
+}
+
+function shortDate(iso: string) {
+  return new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }

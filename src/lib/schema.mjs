@@ -20,6 +20,9 @@ CREATE TABLE IF NOT EXISTS profile (
   milestone_weight REAL,
   milestone_date TEXT,
   milestone_label TEXT,
+  next_milestone_weight REAL,
+  next_milestone_date TEXT,
+  next_milestone_label TEXT,
   claude_model TEXT NOT NULL DEFAULT 'sonnet',
   voice_language TEXT NOT NULL DEFAULT 'en',
   base_steps INTEGER NOT NULL DEFAULT 3000,
@@ -96,6 +99,9 @@ export const PROFILE_SEED = {
   milestone_weight: null,
   milestone_date: null,
   milestone_label: null,
+  next_milestone_weight: null,
+  next_milestone_date: null,
+  next_milestone_label: null,
   claude_model: "sonnet",
   base_steps: 3000,
   food_context: null,
@@ -184,6 +190,9 @@ export function migrate(db) {
   if (!cols.includes("voice_language")) db.exec("ALTER TABLE profile ADD COLUMN voice_language TEXT NOT NULL DEFAULT 'en'");
   if (!cols.includes("base_steps")) db.exec("ALTER TABLE profile ADD COLUMN base_steps INTEGER NOT NULL DEFAULT 3000");
   if (!cols.includes("food_context")) db.exec("ALTER TABLE profile ADD COLUMN food_context TEXT");
+  for (const [c, t] of [["next_milestone_weight", "REAL"], ["next_milestone_date", "TEXT"], ["next_milestone_label", "TEXT"]]) {
+    if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} ${t}`);
+  }
   const hasProfile = db.prepare("SELECT 1 FROM profile WHERE id = 1").get();
   if (!hasProfile) {
     const cols = Object.keys(PROFILE_SEED);

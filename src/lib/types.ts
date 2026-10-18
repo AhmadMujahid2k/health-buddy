@@ -19,6 +19,9 @@ export interface Profile {
   milestone_weight: number | null;
   milestone_date: string | null;
   milestone_label: string | null;
+  next_milestone_weight: number | null;
+  next_milestone_date: string | null;
+  next_milestone_label: string | null;
   claude_model: string;
   voice_language: string;
   /** everyday steps already covered by BMR x activity_factor */

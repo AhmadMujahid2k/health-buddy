@@ -22,6 +22,9 @@ const FIELDS: { key: keyof Profile; label: string; type?: string; step?: string 
   { key: "milestone_label", label: "Milestone name", type: "text" },
   { key: "milestone_weight", label: "Milestone weight (kg)", step: "0.5" },
   { key: "milestone_date", label: "Milestone date", type: "date" },
+  { key: "next_milestone_label", label: "Next milestone name", type: "text" },
+  { key: "next_milestone_weight", label: "Next milestone weight (kg)", step: "0.5" },
+  { key: "next_milestone_date", label: "Next milestone date", type: "date" },
 ];
 
 export function SettingsClient({ profile, startBmr }: { profile: Profile; startBmr: number }) {
