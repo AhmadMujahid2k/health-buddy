@@ -46,9 +46,9 @@ const MEAL_COLS = [
 
 const rows = parseCsv(fs.readFileSync(csvPath, "utf8"));
 const upsertDay = db.prepare(`
-  INSERT INTO days (date, weight, steps, active_kcal, water_l, sleep_h, notes)
-  VALUES (@date, @weight, @steps, @active_kcal, @water_l, @sleep_h, @notes)
-  ON CONFLICT(date) DO UPDATE SET weight=excluded.weight, steps=excluded.steps, active_kcal=excluded.active_kcal,
+  INSERT INTO days (date, weight, steps, distance_km, active_kcal, water_l, sleep_h, notes)
+  VALUES (@date, @weight, @steps, @distance_km, @active_kcal, @water_l, @sleep_h, @notes)
+  ON CONFLICT(date) DO UPDATE SET weight=excluded.weight, steps=excluded.steps, distance_km=excluded.distance_km, active_kcal=excluded.active_kcal,
     water_l=excluded.water_l, sleep_h=excluded.sleep_h, notes=excluded.notes, updated_at=datetime('now')`);
 const delImported = db.prepare("DELETE FROM entries WHERE date = ? AND source = 'import'");
 const insEntry = db.prepare("INSERT INTO entries (date, meal, raw_text, source) VALUES (?, ?, ?, 'import')");
@@ -63,6 +63,7 @@ db.transaction(() => {
       date: r.date,
       weight: num(r.weight_kg),
       steps: num(r.steps),
+      distance_km: num(r.walk_km),
       active_kcal: num(r.exercise_kcal),
       water_l: num(r.water_l),
       sleep_h: num(r.sleep_h),

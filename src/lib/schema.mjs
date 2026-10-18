@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS profile (
   claude_model TEXT NOT NULL DEFAULT 'sonnet',
   voice_language TEXT NOT NULL DEFAULT 'en',
   base_steps INTEGER NOT NULL DEFAULT 3000,
+  stride_m REAL NOT NULL DEFAULT 0.75,
   food_context TEXT
 );
 
@@ -34,6 +35,7 @@ CREATE TABLE IF NOT EXISTS days (
   date TEXT PRIMARY KEY,            -- YYYY-MM-DD, server local time
   weight REAL,
   steps INTEGER,
+  distance_km REAL,                -- from the watch/band; estimated from steps x stride when empty
   active_kcal INTEGER,              -- watch workout/active kcal, on top of BMR x factor
   water_l REAL,
   sleep_h REAL,
@@ -104,6 +106,7 @@ export const PROFILE_SEED = {
   next_milestone_label: null,
   claude_model: "sonnet",
   base_steps: 3000,
+  stride_m: 0.75,
   food_context: null,
 };
 
@@ -189,6 +192,9 @@ export function migrate(db) {
   const cols = db.prepare("PRAGMA table_info(profile)").all().map((c) => c.name);
   if (!cols.includes("voice_language")) db.exec("ALTER TABLE profile ADD COLUMN voice_language TEXT NOT NULL DEFAULT 'en'");
   if (!cols.includes("base_steps")) db.exec("ALTER TABLE profile ADD COLUMN base_steps INTEGER NOT NULL DEFAULT 3000");
+  if (!cols.includes("stride_m")) db.exec("ALTER TABLE profile ADD COLUMN stride_m REAL NOT NULL DEFAULT 0.75");
+  const dayCols = db.prepare("PRAGMA table_info(days)").all().map((c) => c.name);
+  if (!dayCols.includes("distance_km")) db.exec("ALTER TABLE days ADD COLUMN distance_km REAL");
   if (!cols.includes("food_context")) db.exec("ALTER TABLE profile ADD COLUMN food_context TEXT");
   for (const [c, t] of [["next_milestone_weight", "REAL"], ["next_milestone_date", "TEXT"], ["next_milestone_label", "TEXT"]]) {
     if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} ${t}`);

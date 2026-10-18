@@ -13,6 +13,7 @@ const FIELDS: { key: keyof Profile; label: string; type?: string; step?: string 
   { key: "goal_weight", label: "Final goal (kg)", step: "0.5" },
   { key: "activity_factor", label: "Activity factor (1.2 = desk job)", step: "0.05" },
   { key: "base_steps", label: "Everyday steps already in base burn", step: "500" },
+  { key: "stride_m", label: "Step length (m), for km from steps", step: "0.01" },
   { key: "kcal_target", label: "Daily calorie target" },
   { key: "kcal_floor", label: "Minimum calories" },
   { key: "protein_target", label: "Protein target (g)" },

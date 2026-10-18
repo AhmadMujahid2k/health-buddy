@@ -1,6 +1,6 @@
 import { upsertDay } from "@/lib/queries";
 
-const FIELDS = ["weight", "steps", "active_kcal", "water_l", "sleep_h", "notes"] as const;
+const FIELDS = ["weight", "steps", "distance_km", "active_kcal", "water_l", "sleep_h", "notes"] as const;
 
 export async function PUT(req: Request, ctx: RouteContext<"/api/days/[date]">) {
   const { date } = await ctx.params;

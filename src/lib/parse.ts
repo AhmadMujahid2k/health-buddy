@@ -44,7 +44,7 @@ const FILLER = new Set([
   "like", "my", "me", "it", "is", "was", "x", "times", "bit", "kuch", "sath", "saath", "mein", "main",
   // left over after stats/meal words are removed
   "another", "more", "total", "so", "far", "skip", "skipped", "skiped", "kcal", "kcl", "cal", "calories", "calory",
-  "watch", "band", "app", "burn", "burnt", "burned", "steps", "step", "water", "hours", "hour", "hrs", "sleep", "slept",
+  "watch", "band", "app", "km", "kms", "distance", "walked", "walk", "burn", "burnt", "burned", "steps", "step", "water", "hours", "hour", "hrs", "sleep", "slept",
   "liters", "liter", "litres", "litre", "ltr", "from", "than", "after", "before", "good", "day",
 ]);
 

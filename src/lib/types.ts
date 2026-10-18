@@ -26,6 +26,8 @@ export interface Profile {
   voice_language: string;
   /** everyday steps already covered by BMR x activity_factor */
   base_steps: number;
+  /** step length in metres, for estimating km when the band's distance isn't logged */
+  stride_m: number;
   /** free text sent to Claude with every estimate: cuisine, cooking oil, usual recipes */
   food_context: string | null;
 }
@@ -34,6 +36,7 @@ export interface DayRow {
   date: string;
   weight: number | null;
   steps: number | null;
+  distance_km: number | null;
   active_kcal: number | null;
   water_l: number | null;
   sleep_h: number | null;
@@ -88,6 +91,8 @@ export interface DayStats {
   intake: number;
   protein: number;
   steps: number | null;
+  km: number | null; // band distance, or steps x stride
+  kmEstimated: boolean;
   activeKcal: number; // what the watch reported for the whole day
   activeCounted: number; // the part above everyday movement, added to the burn
   bmr: number;

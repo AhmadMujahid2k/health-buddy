@@ -5,7 +5,7 @@ import {
 
 type Day = {
   date: string; weight: number | null; goal: number | null; intake: number | null;
-  burn: number; protein: number | null; steps: number | null;
+  burn: number; protein: number | null; steps: number | null; km: number | null;
 };
 
 // Validated pair (dataviz validator, light + dark): series 1 teal, series 2 orange.
@@ -83,12 +83,18 @@ export function Charts({
         </BarChart>
       </Panel>
 
-      <Panel title="Steps" sub={`Daily steps · dashed line = ${stepTarget.toLocaleString()} target`}>
+      <Panel title="Steps" sub={`Daily steps and distance · dashed line = ${stepTarget.toLocaleString()} target`}>
         <BarChart {...size} data={last14} margin={{ left: -8, right: 8, top: 8 }} barCategoryGap="30%">
           {grid}
           <XAxis dataKey="date" {...axis} />
           <YAxis {...axis} domain={[0, (max: number) => Math.max(max, stepTarget) * 1.08]} tickFormatter={(v: number) => (v ? `${+(v / 1000).toFixed(1)}k` : "0")} allowDecimals={false} />
-          <Tooltip {...tip} />
+          <Tooltip
+            {...tip}
+            formatter={(v, _n, item) => [
+              `${Number(v).toLocaleString()}${item.payload.km != null ? ` · ${item.payload.km} km` : ""}`,
+              "Steps",
+            ]}
+          />
           {target(stepTarget)}
           <Bar isAnimationActive={false} name="Steps" dataKey="steps" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={28} />
         </BarChart>

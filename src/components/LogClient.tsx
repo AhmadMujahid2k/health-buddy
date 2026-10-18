@@ -25,18 +25,18 @@ Breakfast: 2 boiled eggs, chai no sugar
 Lunch skipped
 4pm green tea and an apple
 Dinner: 2 roti with chicken karahi, 1 bowl dahi
-7k steps, 350 kcal from watch, 3 litres water, slept 7 hours`;
+7k steps, 5.2 km, 350 kcal from watch, 3 litres water, slept 7 hours`;
 
 type Draft = DraftItem & { meal: Meal; baseKcal: number; baseProtein: number; baseQty: number };
 const toDraft = (i: DraftItem & { meal: Meal }): Draft => ({ ...i, baseKcal: i.kcal, baseProtein: i.protein, baseQty: i.qty || 1 });
 
-type DayValues = { weight: string; steps: string; active_kcal: string; water_l: string; sleep_h: string; notes: string };
-const STAT_KEYS = ["weight", "steps", "active_kcal", "water_l", "sleep_h"] as const;
+type DayValues = { weight: string; steps: string; distance_km: string; active_kcal: string; water_l: string; sleep_h: string; notes: string };
+const STAT_KEYS = ["weight", "steps", "distance_km", "active_kcal", "water_l", "sleep_h"] as const;
 const STAT_LABEL: Record<(typeof STAT_KEYS)[number], string> = {
-  weight: "Weight", steps: "Steps", active_kcal: "Watch kcal", water_l: "Water", sleep_h: "Sleep",
+  weight: "Weight", steps: "Steps", distance_km: "Distance", active_kcal: "Watch kcal", water_l: "Water", sleep_h: "Sleep",
 };
 const STAT_UNIT: Record<(typeof STAT_KEYS)[number], string> = {
-  weight: "kg", steps: "", active_kcal: "kcal", water_l: "L", sleep_h: "h",
+  weight: "kg", steps: "", distance_km: "km", active_kcal: "kcal", water_l: "L", sleep_h: "h",
 };
 
 export function LogClient({
@@ -61,6 +61,7 @@ export function LogClient({
   const [dayV, setDayV] = useState<DayValues>({
     weight: String(day?.weight ?? ""),
     steps: String(day?.steps ?? ""),
+    distance_km: String(day?.distance_km ?? ""),
     active_kcal: String(day?.active_kcal ?? ""),
     water_l: String(day?.water_l ?? ""),
     sleep_h: String(day?.sleep_h ?? ""),
@@ -324,6 +325,7 @@ function DayForm({
       <div className="grid grid-cols-2 gap-3">
         {field("weight", "Weight (kg)", "0.05")}
         {field("steps", "Steps")}
+        {field("distance_km", "Distance (km)", "0.01")}
         {field("active_kcal", "Watch kcal")}
         {field("water_l", "Water (L)", "0.5")}
         {field("sleep_h", "Sleep (h)", "0.5")}

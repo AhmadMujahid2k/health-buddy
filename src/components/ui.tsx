@@ -44,15 +44,18 @@ export function KpiCard({
 }
 
 export function Bar({
-  label, value, max, unit, overIsBad,
-}: { label: string; value: number; max: number; unit: string; overIsBad?: boolean }) {
+  label, value, max, unit, overIsBad, note,
+}: { label: string; value: number; max: number; unit: string; overIsBad?: boolean; note?: string }) {
   const pct = max > 0 ? Math.min(100, (value / max) * 100) : 0;
   const over = value > max;
   const color = overIsBad && over ? "bg-bad" : "bg-brand";
   return (
     <div>
       <div className="mb-1.5 flex justify-between text-sm">
-        <span className="font-medium">{label}</span>
+        <span className="font-medium">
+          {label}
+          {note && <span className="ml-1.5 text-xs font-normal text-muted">{note}</span>}
+        </span>
         <span className="text-muted">
           <b className="text-foreground">{Math.round(value).toLocaleString()}</b> / {max.toLocaleString()} {unit}
         </span>

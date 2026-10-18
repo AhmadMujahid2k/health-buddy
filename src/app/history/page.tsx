@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getStats } from "@/lib/queries";
-import { fmt } from "@/lib/calc";
+import { fmt, fmtKm } from "@/lib/calc";
 import { PageHeader } from "@/components/ui";
 
 export default function HistoryPage() {
@@ -33,7 +33,7 @@ async function History() {
                   </div>
                   <div className="text-xs text-muted">
                     {s.weight != null ? `${fmt(s.weight, 2)} kg · ` : ""}
-                    {s.steps != null ? `${fmt(s.steps)} steps · ` : ""}
+                    {s.steps != null ? `${fmt(s.steps)} steps (${fmtKm(s.km, s.kmEstimated)}) · ` : ""}
                     {fmt(s.protein)} g protein
                   </div>
                 </div>

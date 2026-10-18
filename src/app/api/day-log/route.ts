@@ -2,7 +2,7 @@ import { db } from "@/lib/db";
 import { addEntry, upsertDay } from "@/lib/queries";
 import type { DraftItem, Meal } from "@/lib/types";
 
-const STAT_FIELDS = ["weight", "steps", "active_kcal", "water_l", "sleep_h", "notes"] as const;
+const STAT_FIELDS = ["weight", "steps", "distance_km", "active_kcal", "water_l", "sleep_h", "notes"] as const;
 
 /** Save a whole day at once: meals + body/activity, in one transaction. */
 export async function POST(req: Request) {

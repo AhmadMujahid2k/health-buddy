@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getStats } from "@/lib/queries";
-import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, goalStatus, nextMilestone, today } from "@/lib/calc";
+import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, fmtKm, goalStatus, nextMilestone, today } from "@/lib/calc";
 import type { DayStats, Profile } from "@/lib/types";
 import { Charts } from "@/components/Charts";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
@@ -19,13 +19,13 @@ export default function Home() {
 function weekly(p: Profile, stats: DayStats[]) {
   const weeks: {
     week: number; start: string; end: string; avgWeight: number | null; avgIntake: number | null;
-    deficit: number; avgSteps: number | null; avgProtein: number | null; onTarget: number; logged: number;
+    deficit: number; avgSteps: number | null; km: number; avgProtein: number | null; onTarget: number; logged: number;
   }[] = [];
   for (const s of stats) {
     const w = Math.floor((s.dayNo - 1) / 7);
     (weeks[w] ??= {
       week: w + 1, start: s.date, end: s.date, avgWeight: null, avgIntake: null, deficit: 0,
-      avgSteps: null, avgProtein: null, onTarget: 0, logged: 0,
+      avgSteps: null, km: 0, avgProtein: null, onTarget: 0, logged: 0,
     }).end = s.date;
   }
   const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
@@ -36,6 +36,7 @@ function weekly(p: Profile, stats: DayStats[]) {
     wk.avgIntake = avg(logged.map((s) => s.intake));
     wk.avgProtein = avg(logged.map((s) => s.protein));
     wk.avgSteps = avg(ds.flatMap((s) => (s.steps != null ? [s.steps] : [])));
+    wk.km = ds.reduce((a, s) => a + (s.km ?? 0), 0);
     wk.deficit = ds.reduce((a, s) => a + s.deficit, 0);
     wk.onTarget = logged.filter((s) => s.intake <= p.kcal_target).length;
     wk.logged = logged.length;
@@ -105,7 +106,7 @@ async function Dashboard() {
               <div className="w-full flex-1 space-y-4">
                 <Bar label="Calories eaten" value={todayS.intake} max={p.kcal_target} unit="kcal" overIsBad />
                 <Bar label="Protein" value={todayS.protein} max={p.protein_target} unit="g" />
-                <Bar label="Steps" value={todayS.steps ?? 0} max={p.step_target} unit="" />
+                <Bar label="Steps" value={todayS.steps ?? 0} max={p.step_target} unit="" note={todayS.km != null ? fmtKm(todayS.km, todayS.kmEstimated) : undefined} />
               </div>
             </div>
             <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl bg-card-2 p-3 text-center">
@@ -170,6 +171,7 @@ async function Dashboard() {
             burn: Math.round(s.totalBurn),
             protein: s.logged ? Math.round(s.protein) : null,
             steps: s.steps,
+            km: s.km != null ? Math.round(s.km * 100) / 100 : null,
           }))}
           kcalTarget={p.kcal_target}
           proteinTarget={p.protein_target}
@@ -182,7 +184,7 @@ async function Dashboard() {
           <table className="w-full min-w-[640px] text-sm">
             <thead className="text-left text-xs text-muted uppercase">
               <tr className="[&>th]:pb-2 [&>th]:font-semibold">
-                <th>Week</th><th>Avg weight</th><th>Avg intake</th><th>Deficit</th><th>Fat lost</th><th>Protein</th><th>Steps</th><th>On target</th>
+                <th>Week</th><th>Avg weight</th><th>Avg intake</th><th>Deficit</th><th>Fat lost</th><th>Protein</th><th>Steps</th><th>Distance</th><th>On target</th>
               </tr>
             </thead>
             <tbody>
@@ -200,6 +202,7 @@ async function Dashboard() {
                   <td className="font-semibold text-good">{fmt(w.deficit / 7700, 2)} kg</td>
                   <td>{w.avgProtein != null ? `${fmt(w.avgProtein)} g` : "–"}</td>
                   <td>{w.avgSteps != null ? fmt(w.avgSteps) : "–"}</td>
+                  <td>{w.km ? `${fmt(w.km, 1)} km` : "–"}</td>
                   <td>{w.onTarget}/{w.logged} days</td>
                 </tr>
               ))}

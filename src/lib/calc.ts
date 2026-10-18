@@ -108,6 +108,7 @@ export function buildStats(
     const f = food.get(date);
     if (row?.weight != null) weightUsed = row.weight;
     const intake = f?.kcal ?? 0;
+    const km = row?.distance_km ?? (row?.steps ? (row.steps * (p.stride_m || 0.75)) / 1000 : null);
     const active = row?.active_kcal ?? 0;
     const counted = countedActiveKcal(active, row?.steps ?? null, p.base_steps ?? 3000);
     const b = bmr(p, weightUsed, date);
@@ -123,6 +124,8 @@ export function buildStats(
       intake,
       protein: f?.protein ?? 0,
       steps: row?.steps ?? null,
+      km,
+      kmEstimated: row?.distance_km == null && km != null,
       activeKcal: active,
       activeCounted: counted,
       bmr: b,
@@ -152,3 +155,8 @@ export function goalStatus(current: number, planned: number | null, target: numb
 
 export const fmt = (n: number, d = 0) =>
   n.toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+
+/** "7.48 km", with a ~ when it's estimated from steps. */
+export function fmtKm(km: number | null, estimated = false): string {
+  return km == null ? "–" : `${estimated ? "~" : ""}${km.toFixed(km < 10 ? 2 : 1)} km`;
+}

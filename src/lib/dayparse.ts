@@ -8,6 +8,7 @@ import type { Meal } from "./types";
 export interface DayStatsDraft {
   weight?: number;
   steps?: number;
+  distance_km?: number;
   active_kcal?: number;
   water_l?: number;
   sleep_h?: number;
@@ -29,6 +30,8 @@ const STAT_PATTERNS: { key: keyof DayStatsDraft; re: RegExp; read: (m: RegExpMat
   // steps: "7k steps", "7,500 steps", "steps 7k", "total steps 6k"
   { key: "steps", re: /(\d+(?:[.,]\d+)?)\s*(k)?\s*steps?\b/i, read: (m) => Math.round(num(m[1].replace(",", "")) * (m[2] ? 1000 : 1)) },
   { key: "steps", re: /steps?\s*(?:were|was|is|:|=)?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i, read: (m) => Math.round(num(m[1]) * (m[2] ? 1000 : 1)) },
+  // distance: "7.48 km", "walked 5km"
+  { key: "distance_km", re: /(\d+(?:[.,]\d+)?)\s*(?:km|kms|kilomet(?:er|re)s?)\b/i, read: (m) => num(m[1]) },
   // watch kcal: "350 kcal burnt", "345kcal from watch", "burnt 300 calories"
   {
     key: "active_kcal",

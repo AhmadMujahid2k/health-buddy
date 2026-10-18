@@ -3,7 +3,7 @@ import { getEntries, getStats } from "@/lib/queries";
 export async function GET() {
   const { stats } = getStats();
   const head = [
-    "date", "day", "weight_kg", "weight_used", "intake_kcal", "protein_g", "steps", "watch_kcal", "watch_kcal_counted",
+    "date", "day", "weight_kg", "weight_used", "intake_kcal", "protein_g", "steps", "distance_km", "watch_kcal", "watch_kcal_counted",
     "bmr", "base_burn", "total_burn", "deficit", "cum_deficit", "est_fat_kg", "goal_path_kg", "water_l", "sleep_h", "foods",
   ];
   const esc = (v: unknown) => {
@@ -18,7 +18,7 @@ export async function GET() {
       .join(" | ");
     lines.push(
       [
-        s.date, s.dayNo, s.weight, s.weightUsed, r(s.intake), r(s.protein), s.steps, s.activeKcal, r(s.activeCounted), r(s.bmr),
+        s.date, s.dayNo, s.weight, s.weightUsed, r(s.intake), r(s.protein), s.steps, s.km?.toFixed(2), s.activeKcal, r(s.activeCounted), r(s.bmr),
         r(s.baseBurn), r(s.totalBurn), r(s.deficit), r(s.cumDeficit), s.fatKg.toFixed(2),
         s.goalPath?.toFixed(2), s.water, s.sleep, foods,
       ].map(esc).join(","),
