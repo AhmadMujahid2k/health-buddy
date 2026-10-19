@@ -19,12 +19,12 @@ export default function Home() {
 function weekly(p: Profile, stats: DayStats[]) {
   const weeks: {
     week: number; start: string; end: string; avgWeight: number | null; avgIntake: number | null;
-    deficit: number; avgSteps: number | null; km: number; avgProtein: number | null; onTarget: number; logged: number;
+    deficit: number; days: number; avgSteps: number | null; km: number; avgProtein: number | null; onTarget: number; logged: number;
   }[] = [];
   for (const s of stats) {
     const w = Math.floor((s.dayNo - 1) / 7);
     (weeks[w] ??= {
-      week: w + 1, start: s.date, end: s.date, avgWeight: null, avgIntake: null, deficit: 0,
+      week: w + 1, start: s.date, end: s.date, avgWeight: null, avgIntake: null, deficit: 0, days: 0,
       avgSteps: null, km: 0, avgProtein: null, onTarget: 0, logged: 0,
     }).end = s.date;
   }
@@ -32,6 +32,7 @@ function weekly(p: Profile, stats: DayStats[]) {
   for (const wk of weeks) {
     const ds = stats.filter((s) => s.date >= wk.start && s.date <= wk.end);
     const logged = ds.filter((s) => s.logged);
+    wk.days = ds.length;
     wk.avgWeight = avg(ds.flatMap((s) => (s.weight != null ? [s.weight] : [])));
     wk.avgIntake = avg(logged.map((s) => s.intake));
     wk.avgProtein = avg(logged.map((s) => s.protein));
@@ -64,6 +65,7 @@ async function Dashboard() {
   const pace = daysLeft && kgLeft != null ? kgLeft / (daysLeft / 7) : null;
 
   const recent = stats.filter((s) => s.logged).slice(-7);
+  const weeks = weekly(p, stats);
   const avg = (f: (s: DayStats) => number) => (recent.length ? recent.reduce((a, s) => a + f(s), 0) / recent.length : 0);
   const totalDeficit = stats.at(-1)?.cumDeficit ?? 0;
 
@@ -180,32 +182,71 @@ async function Dashboard() {
 
         {/* Weekly */}
         <section className="card overflow-x-auto">
-          <h2 className="mb-3 font-bold">Weekly summary</h2>
-          <table className="w-full min-w-[640px] text-sm">
+          <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h2 className="font-bold">Weekly summary</h2>
+            <span className="text-xs text-muted">Small numbers = change from the week before</span>
+          </div>
+          <table className="w-full min-w-[760px] text-sm">
             <thead className="text-left text-xs text-muted uppercase">
-              <tr className="[&>th]:pb-2 [&>th]:font-semibold">
-                <th>Week</th><th>Avg weight</th><th>Avg intake</th><th>Deficit</th><th>Fat lost</th><th>Protein</th><th>Steps</th><th>Distance</th><th>On target</th>
+              <tr className="[&>th]:pb-1.5 [&>th]:font-semibold">
+                <th rowSpan={2} className="align-bottom">Week</th>
+                <th colSpan={4} className="border-b border-line">Daily average</th>
+                <th className="w-4" rowSpan={2} />
+                <th colSpan={3} className="border-b border-line">Week total</th>
+                <th rowSpan={2} className="align-bottom">On target</th>
+              </tr>
+              <tr className="[&>th]:pt-1.5 [&>th]:pb-2 [&>th]:font-semibold">
+                <th>Weight</th><th>Intake</th><th>Protein</th><th>Steps</th>
+                <th>Deficit</th><th>Fat lost</th><th>Distance</th>
               </tr>
             </thead>
             <tbody>
-              {weekly(p, stats).map((w) => (
-                <tr key={w.week} className="border-t border-line [&>td]:py-2.5">
-                  <td className="font-semibold">
-                    Week {w.week}{" "}
-                    <span className="font-normal text-muted">
-                      {new Date(w.start + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                    </span>
-                  </td>
-                  <td>{w.avgWeight != null ? `${fmt(w.avgWeight, 2)} kg` : "–"}</td>
-                  <td>{w.avgIntake != null ? `${fmt(w.avgIntake)} kcal` : "–"}</td>
-                  <td>{fmt(w.deficit)}</td>
-                  <td className="font-semibold text-good">{fmt(w.deficit / 7700, 2)} kg</td>
-                  <td>{w.avgProtein != null ? `${fmt(w.avgProtein)} g` : "–"}</td>
-                  <td>{w.avgSteps != null ? fmt(w.avgSteps) : "–"}</td>
-                  <td>{w.km ? `${fmt(w.km, 1)} km` : "–"}</td>
-                  <td>{w.onTarget}/{w.logged} days</td>
-                </tr>
-              ))}
+              {weeks.map((w, i) => {
+                const prev = weeks[i + 1];
+                // totals of an unfinished week aren't comparable with a full one
+                const prevTotal = w.days === 7 ? prev : undefined;
+                return (
+                  <tr key={w.week} className="border-t border-line align-top [&>td]:py-2.5">
+                    <td className="font-semibold">
+                      Week {w.week}
+                      <div className="text-xs font-normal text-muted">
+                        {new Date(w.start + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        {w.days < 7 ? ` · ${w.days} of 7 days` : ""}
+                      </div>
+                    </td>
+                    <td>
+                      {w.avgWeight != null ? `${fmt(w.avgWeight, 2)} kg` : "–"}
+                      <Delta now={w.avgWeight} before={prev?.avgWeight} digits={2} unit=" kg" better="down" />
+                    </td>
+                    <td>
+                      {w.avgIntake != null ? `${fmt(w.avgIntake)} kcal` : "–"}
+                      <Delta now={w.avgIntake} before={prev?.avgIntake} unit=" kcal" />
+                    </td>
+                    <td>
+                      {w.avgProtein != null ? `${fmt(w.avgProtein)} g` : "–"}
+                      <Delta now={w.avgProtein} before={prev?.avgProtein} unit=" g" better="up" />
+                    </td>
+                    <td>
+                      {w.avgSteps != null ? fmt(w.avgSteps) : "–"}
+                      <Delta now={w.avgSteps} before={prev?.avgSteps} better="up" />
+                    </td>
+                    <td />
+                    <td>
+                      {fmt(w.deficit)} kcal
+                      <Delta now={w.deficit} before={prevTotal?.deficit} unit=" kcal" better="up" />
+                    </td>
+                    <td className="font-semibold text-good">
+                      {fmt(w.deficit / 7700, 2)} kg
+                      <Delta now={w.deficit / 7700} before={prevTotal ? prevTotal.deficit / 7700 : null} digits={2} unit=" kg" better="up" />
+                    </td>
+                    <td>
+                      {w.km ? `${fmt(w.km, 1)} km` : "–"}
+                      <Delta now={w.km || null} before={prevTotal?.km || null} digits={1} unit=" km" better="up" />
+                    </td>
+                    <td>{w.onTarget}/{w.logged} days</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </section>
@@ -219,4 +260,20 @@ async function Dashboard() {
 
 function shortDate(iso: string) {
   return new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+}
+
+/** Change from the previous week, coloured by which direction is good (neutral when there's no "better"). */
+function Delta({
+  now, before, digits = 0, unit = "", better,
+}: { now: number | null | undefined; before: number | null | undefined; digits?: number; unit?: string; better?: "up" | "down" }) {
+  if (now == null || before == null) return null;
+  const d = now - before;
+  if (Math.abs(d) < 0.5 * 10 ** -digits) return <div className="text-xs font-semibold text-muted">– 0{unit}</div>;
+  const good = better ? (better === "up" ? d > 0 : d < 0) : null;
+  const tone = good == null ? "text-muted" : good ? "text-good" : "text-bad";
+  return (
+    <div className={`text-xs font-semibold ${tone}`}>
+      {d < 0 ? "▼" : "▲"} {fmt(Math.abs(d), digits)}{unit}
+    </div>
+  );
 }
