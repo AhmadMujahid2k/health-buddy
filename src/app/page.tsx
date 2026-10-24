@@ -204,14 +204,16 @@ async function Dashboard() {
               {weeks.map((w, i) => {
                 const prev = weeks[i + 1];
                 // totals of an unfinished week aren't comparable with a full one
-                const prevTotal = w.days === 7 ? prev : undefined;
+                // a week is finished once its last day is over (today still counts as in progress)
+                const finished = w.days === 7 && w.end < t;
+                const prevTotal = finished ? prev : undefined;
                 return (
                   <tr key={w.week} className="border-t border-line align-top [&>td]:py-2.5">
                     <td className="font-semibold">
                       Week {w.week}
                       <div className="text-xs font-normal text-muted">
                         {new Date(w.start + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                        {w.days < 7 ? ` · ${w.days} of 7 days` : ""}
+                        {!finished ? ` · day ${w.days} of 7` : ""}
                       </div>
                     </td>
                     <td>
