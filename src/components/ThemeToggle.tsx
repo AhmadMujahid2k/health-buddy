@@ -8,16 +8,16 @@ const PALETTE_KEY = "hb-palette";
 
 /** Colour palettes defined in globals.css (<html data-palette>). Swatches are the palette's source colours. */
 export const PALETTES = [
+  { id: "ocean", label: "Ocean Blue", swatch: ["#e3f2fd", "#90caf9", "#2196f3", "#0d47a1"] },
   { id: "navy", label: "Navy & Cream", swatch: ["#010736", "#0d1c42", "#22396f", "#fcf1d0"] },
   { id: "indigo", label: "Electric Indigo", swatch: ["#2f2fe4", "#162e93", "#1a1953", "#080616"] },
   { id: "crimson", label: "Crimson Black", swatch: ["#000000", "#830000", "#bc0202", "#ff0000"] },
   { id: "sky", label: "Sky & Mint", swatch: ["#30afff", "#92eeff", "#d8ffc5", "#c4f7ca"] },
-  { id: "ocean", label: "Ocean Blue", swatch: ["#e3f2fd", "#90caf9", "#2196f3", "#0d47a1"] },
 ] as const;
 type PaletteId = (typeof PALETTES)[number]["id"];
 
 /** Runs before first paint (see layout.tsx) so the saved theme and palette never flash. */
-export const themeBootScript = `try{var d=document.documentElement,t=localStorage.getItem("${KEY}"),p=localStorage.getItem("${PALETTE_KEY}");if(t==="light"||t==="dark")d.dataset.theme=t;if(p&&/^(${"navy|indigo|crimson|sky|ocean"})$/.test(p))d.dataset.palette=p}catch(e){}`;
+export const themeBootScript = `try{var d=document.documentElement,t=localStorage.getItem("${KEY}"),p=localStorage.getItem("${PALETTE_KEY}");if(t==="light"||t==="dark")d.dataset.theme=t;if(p&&/^(${"ocean|navy|indigo|crimson|sky"})$/.test(p))d.dataset.palette=p}catch(e){}`;
 
 function apply(t: Theme) {
   if (t === "system") delete document.documentElement.dataset.theme;
@@ -70,7 +70,7 @@ export function ThemeToggle() {
 
 /** Palette swatches: tap one to recolour the whole app. */
 export function PalettePicker() {
-  const [palette, setPalette] = useState<PaletteId>("navy");
+  const [palette, setPalette] = useState<PaletteId>("ocean");
 
   useEffect(() => {
     try {
