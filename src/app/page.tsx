@@ -5,6 +5,11 @@ import { getStats } from "@/lib/queries";
 import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, fmtKm, goalStatus, nextMilestone, today } from "@/lib/calc";
 import type { DayStats, Profile } from "@/lib/types";
 import { Charts } from "@/components/Charts";
+import { InsightsTicker } from "@/components/InsightsTicker";
+import { JourneyMap } from "@/components/JourneyMap";
+import { LiveBurn } from "@/components/LiveBurn";
+import { Streaks } from "@/components/Streaks";
+import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
 import { Activity, AlertTriangle, CheckCircle2, Download, Flame, Plus, Scale, TrendingDown } from "lucide-react";
 
@@ -88,6 +93,8 @@ async function Dashboard() {
       />
 
       <div className="space-y-5">
+        <InsightsTicker items={getInsights(p, stats, t)} />
+
         {/* KPIs */}
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <KpiCard icon={Scale} label="Current weight" value={`${fmt(current, 2)} kg`} sub={`${lost >= 0 ? "−" : "+"}${fmt(Math.abs(lost), 2)} kg since start`} />
@@ -103,6 +110,17 @@ async function Dashboard() {
               <h2 className="font-bold">Today</h2>
               <span className="text-xs text-muted">Target {fmt(p.kcal_target)} kcal · {p.protein_target} g protein</span>
             </div>
+            {todayS.date === t && (
+              <div className="mb-5">
+                <LiveBurn
+                  baseBurn={todayS.baseBurn}
+                  activeCounted={todayS.activeCounted}
+                  intake={todayS.intake}
+                  eatStart={p.eat_start}
+                  eatEnd={p.eat_end}
+                />
+              </div>
+            )}
             <div className="flex flex-col items-center gap-6 sm:flex-row">
               <CalorieRing eaten={todayS.intake} target={p.kcal_target} />
               <div className="w-full flex-1 space-y-4">
@@ -162,6 +180,19 @@ async function Dashboard() {
               </p>
             </div>
           ) : null}
+        </section>
+
+        <section className="grid gap-5 lg:grid-cols-5">
+          <div className="lg:col-span-2">
+            <Streaks items={getStreaks(p, stats, t)} />
+          </div>
+          <div className="min-w-0 lg:col-span-3">
+            <JourneyMap
+              name={JOURNEY.name}
+              stops={JOURNEY.stops}
+              totalKm={stats.filter((s) => s.date <= t).reduce((a, s) => a + (s.km ?? 0), 0)}
+            />
+          </div>
         </section>
 
         <Charts

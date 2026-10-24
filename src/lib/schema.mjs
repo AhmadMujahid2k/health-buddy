@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS profile (
   voice_language TEXT NOT NULL DEFAULT 'en',
   base_steps INTEGER NOT NULL DEFAULT 3000,
   stride_m REAL NOT NULL DEFAULT 0.75,
+  eat_start TEXT,                  -- "HH:MM" eating window, for the dashboard clock
+  eat_end TEXT,
   food_context TEXT
 );
 
@@ -107,6 +109,8 @@ export const PROFILE_SEED = {
   claude_model: "sonnet",
   base_steps: 3000,
   stride_m: 0.75,
+  eat_start: null,
+  eat_end: null,
   food_context: null,
 };
 
@@ -193,6 +197,7 @@ export function migrate(db) {
   if (!cols.includes("voice_language")) db.exec("ALTER TABLE profile ADD COLUMN voice_language TEXT NOT NULL DEFAULT 'en'");
   if (!cols.includes("base_steps")) db.exec("ALTER TABLE profile ADD COLUMN base_steps INTEGER NOT NULL DEFAULT 3000");
   if (!cols.includes("stride_m")) db.exec("ALTER TABLE profile ADD COLUMN stride_m REAL NOT NULL DEFAULT 0.75");
+  for (const c of ["eat_start", "eat_end"]) if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} TEXT`);
   const dayCols = db.prepare("PRAGMA table_info(days)").all().map((c) => c.name);
   if (!dayCols.includes("distance_km")) db.exec("ALTER TABLE days ADD COLUMN distance_km REAL");
   if (!cols.includes("food_context")) db.exec("ALTER TABLE profile ADD COLUMN food_context TEXT");

@@ -173,3 +173,23 @@ input, select, textarea {
   font-size: 0.75rem;
   font-weight: 700;
 }
+
+/* ── Live bits on the dashboard ─────────────────────────────────── */
+@keyframes hb-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes hb-flicker {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25% { transform: scale(1.08) rotate(-4deg); filter: brightness(1.15); }
+  50% { transform: scale(0.96) rotate(3deg); }
+  75% { transform: scale(1.05) rotate(-2deg); filter: brightness(1.1); }
+}
+@keyframes hb-pulse { 0% { transform: scale(0.8); opacity: 0.45; } 100% { transform: scale(1.9); opacity: 0; } }
+@keyframes hb-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--warn) 35%, transparent); } 50% { box-shadow: 0 0 0 7px transparent; } }
+
+.hb-fade-in { animation: hb-fade-in 0.45s ease-out both; }
+.hb-flicker { display: inline-block; animation: hb-flicker 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
+.hb-pulse { transform-box: fill-box; transform-origin: center; animation: hb-pulse 1.8s ease-out infinite; }
+.hb-flame { animation: hb-glow 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hb-fade-in, .hb-flicker, .hb-pulse, .hb-flame { animation: none; }
+}

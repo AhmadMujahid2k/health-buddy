@@ -28,6 +28,9 @@ export interface Profile {
   base_steps: number;
   /** step length in metres, for estimating km when the band's distance isn't logged */
   stride_m: number;
+  /** eating window "HH:MM", optional */
+  eat_start: string | null;
+  eat_end: string | null;
   /** free text sent to Claude with every estimate: cuisine, cooking oil, usual recipes */
   food_context: string | null;
 }

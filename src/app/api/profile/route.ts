@@ -5,7 +5,7 @@ const NUMERIC = new Set([
   "height_cm", "start_weight", "goal_weight", "activity_factor", "kcal_target", "kcal_floor",
   "protein_target", "step_target", "water_target", "sleep_target", "milestone_weight", "base_steps", "stride_m", "next_milestone_weight",
 ]);
-const TEXT = new Set(["name", "sex", "dob", "start_date", "milestone_date", "milestone_label", "next_milestone_date", "next_milestone_label", "claude_model", "voice_language", "food_context"]);
+const TEXT = new Set(["name", "sex", "dob", "start_date", "milestone_date", "milestone_label", "next_milestone_date", "next_milestone_label", "eat_start", "eat_end", "claude_model", "voice_language", "food_context"]);
 
 export async function PUT(req: Request) {
   const b = (await req.json()) as Record<string, unknown>;
