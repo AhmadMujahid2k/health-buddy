@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CalendarDays, LayoutDashboard, Menu, PlusCircle, Settings, UtensilsCrossed, X } from "lucide-react";
 import { Logo } from "./Logo";
-import { ThemeToggle } from "./ThemeToggle";
+import { PalettePicker, ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -31,10 +31,10 @@ function Sidebar({ widget, onNavigate }: { widget: React.ReactNode; onNavigate?:
               href={href}
               onClick={onNavigate}
               className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                active ? "bg-brand text-white shadow-sm" : "hover:bg-sidebar-line hover:text-white"
+                active ? "bg-sidebar-active text-sidebar-strong shadow-sm" : "hover:bg-sidebar-line hover:text-sidebar-strong"
               }`}
             >
-              <Icon size={18} strokeWidth={2} className={active ? "" : "text-sidebar-text/80 group-hover:text-white"} />
+              <Icon size={18} strokeWidth={2} className={active ? "" : "text-sidebar-text/80 group-hover:text-sidebar-strong"} />
               {label}
             </Link>
           );
@@ -42,6 +42,7 @@ function Sidebar({ widget, onNavigate }: { widget: React.ReactNode; onNavigate?:
       </nav>
       <div className="mt-auto space-y-3">
         {widget}
+        <PalettePicker />
         <ThemeToggle />
         <p className="px-2 text-[11px] text-sidebar-text/50">Local · private · runs on this laptop</p>
       </div>
@@ -64,7 +65,7 @@ export function Shell({ children, widget }: { children: React.ReactNode; widget:
       {/* mobile top bar + drawer */}
       <header className="sticky top-0 z-20 flex items-center justify-between bg-sidebar px-4 py-3 md:hidden">
         <Logo />
-        <button aria-label="Open menu" className="rounded-lg p-2 text-white hover:bg-sidebar-line" onClick={() => setOpen(true)}>
+        <button aria-label="Open menu" className="rounded-lg p-2 text-sidebar-strong hover:bg-sidebar-line" onClick={() => setOpen(true)}>
           <Menu size={22} />
         </button>
       </header>
@@ -74,7 +75,7 @@ export function Shell({ children, widget }: { children: React.ReactNode; widget:
           <aside className="absolute inset-y-0 left-0 w-72 shadow-2xl">
             <button
               aria-label="Close menu"
-              className="absolute top-4 right-3 z-10 rounded-lg p-2 text-white hover:bg-sidebar-line"
+              className="absolute top-4 right-3 z-10 rounded-lg p-2 text-sidebar-strong hover:bg-sidebar-line"
               onClick={() => setOpen(false)}
             >
               <X size={20} />

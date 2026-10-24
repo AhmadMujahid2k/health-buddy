@@ -18,11 +18,11 @@ export async function GoalWidget() {
   return (
     <div className="rounded-xl border border-sidebar-line bg-sidebar-line/40 p-3.5">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-semibold text-white">🎯 {fmt(m.weight)} kg goal</span>
-        <span className={good ? "text-brand-300" : "text-amber-300"}>{status === "ON TRACK" ? "On track" : status?.toLowerCase()}</span>
+        <span className="font-semibold text-sidebar-strong">🎯 {fmt(m.weight)} kg goal</span>
+        <span className={good ? "text-sidebar-accent" : "text-amber-300"}>{status === "ON TRACK" ? "On track" : status?.toLowerCase()}</span>
       </div>
       <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-sidebar">
-        <div className="h-full rounded-full bg-brand-300" style={{ width: `${pct}%` }} />
+        <div className="h-full rounded-full bg-sidebar-accent" style={{ width: `${pct}%` }} />
       </div>
       <div className="mt-2 flex justify-between text-[11px]">
         <span>{fmt(current, 2)} kg now</span>

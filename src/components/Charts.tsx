@@ -8,7 +8,7 @@ type Day = {
   burn: number; protein: number | null; steps: number | null; km: number | null;
 };
 
-// Validated pair (dataviz validator, light + dark): series 1 teal, series 2 orange.
+// Validated pair (dataviz validator, light + dark): series 1 blue, series 2 orange.
 const S1 = "var(--chart-1)";
 const S2 = "var(--chart-2)";
 const size = { responsive: true, style: { width: "100%", height: 240 } } as const;

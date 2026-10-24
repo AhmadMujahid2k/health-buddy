@@ -82,7 +82,7 @@ async function Dashboard() {
   return (
     <>
       <PageHeader
-        title={`Hi ${p.name ?? "there"} 👋`}
+        title={`Hi ${p.name ?? "there"}`}
         subtitle={`${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · Day ${todayS.dayNo} of your journey`}
         actions={
           <>

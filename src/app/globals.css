@@ -1,83 +1,388 @@
 @import "tailwindcss";
 
-/* ── Health Buddy brand ─────────────────────────────────────────────
-   Brand: teal ("Buddy Teal" #0d9488). Second chart series: orange #ea580c.
-   Chart pair validated colour-blind safe in light + dark (dataviz validator).
-   Status colours (good / warn / bad) are reserved for state, never for series. */
+/* ── Health Buddy colours ───────────────────────────────────────────
+   GENERATED palettes (pick one in the sidebar; <html data-palette>), each with a light and a dark
+   variant. Chart pairs validated colour-blind safe with the dataviz validator for every palette/mode.
+   Status colours (good / warn / bad) are shared and reserved for state, never for series. */
 
 :root {
-  --background: #f4f7f7;
-  --foreground: #0f1f22;
-  --card: #ffffff;
-  --card-2: #f8fafa;
-  --muted: #5b6b6e;
-  --line: #e2e8e8;
-  --brand: #0d9488;
-  --brand-strong: #0f766e;
-  --brand-soft: #e6f6f4;
-  --chart-1: #0d9488;
-  --chart-2: #ea580c;
   --good: #15803d;
-  --good-soft: #e8f6ec;
+  --good-soft: #e3f1dc;
   --warn: #b45309;
-  --warn-soft: #fdf3e2;
-  --bad: #dc2626;
-  --bad-soft: #fdecec;
-  --sidebar: #0b1f22;
-  --sidebar-line: #16343a;
-  --sidebar-text: #a9c4c6;
-  --shadow: 0 1px 2px rgb(15 31 34 / 0.04), 0 4px 16px rgb(15 31 34 / 0.05);
+  --warn-soft: #fbe7c0;
+  --bad: #c62828;
+  --bad-soft: #fbe0d6;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.05), 0 4px 16px rgb(0 0 0 / 0.06);
 }
-
-/* Dark: follows the system unless the user picked a theme (Sidebar → theme switch sets <html data-theme>) */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: #081214;
-    --foreground: #e4eff0;
-    --card: #0f1c1f;
-    --card-2: #132326;
-    --muted: #8aa2a5;
-    --line: #1d3236;
-    --brand: #14b8a6;
-    --brand-strong: #2dd4bf;
-    --brand-soft: #0f2f2e;
-    --chart-1: #0d9488;
-    --chart-2: #ea580c;
     --good: #4ade80;
-    --good-soft: #10291a;
+    --good-soft: #0f2e2a;
     --warn: #fbbf24;
-    --warn-soft: #2d2410;
+    --warn-soft: #2e2a1c;
     --bad: #f87171;
-    --bad-soft: #2f1414;
-    --sidebar: #061012;
-    --sidebar-line: #13282c;
-    --sidebar-text: #8fb0b3;
-    --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+    --bad-soft: #3a1830;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
   }
 }
-
 :root[data-theme="dark"] {
-  --background: #081214;
-  --foreground: #e4eff0;
-  --card: #0f1c1f;
-  --card-2: #132326;
-  --muted: #8aa2a5;
-  --line: #1d3236;
-  --brand: #14b8a6;
-  --brand-strong: #2dd4bf;
-  --brand-soft: #0f2f2e;
-  --chart-1: #0d9488;
-  --chart-2: #ea580c;
   --good: #4ade80;
-  --good-soft: #10291a;
+  --good-soft: #0f2e2a;
   --warn: #fbbf24;
-  --warn-soft: #2d2410;
+  --warn-soft: #2e2a1c;
   --bad: #f87171;
-  --bad-soft: #2f1414;
-  --sidebar: #061012;
-  --sidebar-line: #13282c;
-  --sidebar-text: #8fb0b3;
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --bad-soft: #3a1830;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.35);
+}
+
+/* Navy & Cream: 010736 · 0D1C42 · 22396F · FCF1D0 */
+:root, :root[data-palette="navy"] {
+  --background: #fcf1d0;
+  --foreground: #010736;
+  --card: #fffbf0;
+  --card-2: #f7ebc7;
+  --muted: #4f5a7c;
+  --line: #e8d9ab;
+  --brand: #22396f;
+  --brand-strong: #0d1c42;
+  --brand-soft: #e9e4d2;
+  --on-brand: #fcf1d0;
+  --chart-1: #2f55b8;
+  --chart-2: #e8590c;
+  --sidebar: #010736;
+  --sidebar-line: #0d1c42;
+  --sidebar-active: #22396f;
+  --sidebar-text: #c9c4b2;
+  --sidebar-strong: #fcf1d0;
+  --sidebar-accent: #8fa6e8;
+  --logo-tile: #fcf1d0;
+  --logo-heart: #22396f;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="navy"]:not([data-theme="light"]), :root:not([data-palette]):not([data-theme="light"]) {
+    --background: #010736;
+    --foreground: #fcf1d0;
+    --card: #0d1c42;
+    --card-2: #14275a;
+    --muted: #a3abc6;
+    --line: #22396f;
+    --brand: #fcf1d0;
+    --brand-strong: #fff8e6;
+    --brand-soft: #22396f;
+    --on-brand: #010736;
+    --chart-1: #6a88da;
+    --chart-2: #dc6620;
+    --sidebar: #00041f;
+    --sidebar-line: #0d1c42;
+    --sidebar-active: #22396f;
+    --sidebar-text: #b9b4a3;
+    --sidebar-strong: #fcf1d0;
+    --sidebar-accent: #8fa6e8;
+    --logo-tile: #fcf1d0;
+    --logo-heart: #22396f;
+  }
+}
+:root[data-palette="navy"][data-theme="dark"], :root:not([data-palette])[data-theme="dark"] {
+  --background: #010736;
+  --foreground: #fcf1d0;
+  --card: #0d1c42;
+  --card-2: #14275a;
+  --muted: #a3abc6;
+  --line: #22396f;
+  --brand: #fcf1d0;
+  --brand-strong: #fff8e6;
+  --brand-soft: #22396f;
+  --on-brand: #010736;
+  --chart-1: #6a88da;
+  --chart-2: #dc6620;
+  --sidebar: #00041f;
+  --sidebar-line: #0d1c42;
+  --sidebar-active: #22396f;
+  --sidebar-text: #b9b4a3;
+  --sidebar-strong: #fcf1d0;
+  --sidebar-accent: #8fa6e8;
+  --logo-tile: #fcf1d0;
+  --logo-heart: #22396f;
+}
+
+/* Electric Indigo: 2F2FE4 · 162E93 · 1A1953 · 080616 */
+:root[data-palette="indigo"] {
+  --background: #f3f3fd;
+  --foreground: #080616;
+  --card: #ffffff;
+  --card-2: #ececfb;
+  --muted: #4d4b6e;
+  --line: #dadaf5;
+  --brand: #2f2fe4;
+  --brand-strong: #162e93;
+  --brand-soft: #e3e3fc;
+  --on-brand: #ffffff;
+  --chart-1: #3b3be8;
+  --chart-2: #e8590c;
+  --sidebar: #080616;
+  --sidebar-line: #1a1953;
+  --sidebar-active: #2f2fe4;
+  --sidebar-text: #b7b6d9;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #8c8cff;
+  --logo-tile: #2f2fe4;
+  --logo-heart: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="indigo"]:not([data-theme="light"]) {
+    --background: #080616;
+    --foreground: #ededff;
+    --card: #12113a;
+    --card-2: #1a1953;
+    --muted: #a9a8d0;
+    --line: #2a2970;
+    --brand: #4747f0;
+    --brand-strong: #6b6bff;
+    --brand-soft: #1a1953;
+    --on-brand: #ffffff;
+    --chart-1: #7b7bff;
+    --chart-2: #dc6620;
+    --sidebar: #050410;
+    --sidebar-line: #1a1953;
+    --sidebar-active: #2f2fe4;
+    --sidebar-text: #b7b6d9;
+    --sidebar-strong: #ffffff;
+    --sidebar-accent: #8c8cff;
+    --logo-tile: #2f2fe4;
+    --logo-heart: #ffffff;
+  }
+}
+:root[data-palette="indigo"][data-theme="dark"] {
+  --background: #080616;
+  --foreground: #ededff;
+  --card: #12113a;
+  --card-2: #1a1953;
+  --muted: #a9a8d0;
+  --line: #2a2970;
+  --brand: #4747f0;
+  --brand-strong: #6b6bff;
+  --brand-soft: #1a1953;
+  --on-brand: #ffffff;
+  --chart-1: #7b7bff;
+  --chart-2: #dc6620;
+  --sidebar: #050410;
+  --sidebar-line: #1a1953;
+  --sidebar-active: #2f2fe4;
+  --sidebar-text: #b7b6d9;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #8c8cff;
+  --logo-tile: #2f2fe4;
+  --logo-heart: #ffffff;
+}
+
+/* Crimson Black: 000000 · 830000 · BC0202 · FF0000 */
+:root[data-palette="crimson"] {
+  --background: #fff5f5;
+  --foreground: #140000;
+  --card: #ffffff;
+  --card-2: #fdecec;
+  --muted: #6b4a4a;
+  --line: #f5d5d5;
+  --brand: #bc0202;
+  --brand-strong: #830000;
+  --brand-soft: #fce3e3;
+  --on-brand: #ffffff;
+  --chart-1: #bc0202;
+  --chart-2: #2f55b8;
+  --sidebar: #000000;
+  --sidebar-line: #2a0000;
+  --sidebar-active: #830000;
+  --sidebar-text: #d9bdbd;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #ff5a5a;
+  --logo-tile: #bc0202;
+  --logo-heart: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="crimson"]:not([data-theme="light"]) {
+    --background: #000000;
+    --foreground: #ffeaea;
+    --card: #160303;
+    --card-2: #230505;
+    --muted: #c9a3a3;
+    --line: #3d0a0a;
+    --brand: #e01a1a;
+    --brand-strong: #ff3b3b;
+    --brand-soft: #3a0606;
+    --on-brand: #ffffff;
+    --chart-1: #f03a3a;
+    --chart-2: #6a88da;
+    --sidebar: #000000;
+    --sidebar-line: #2a0000;
+    --sidebar-active: #830000;
+    --sidebar-text: #d9bdbd;
+    --sidebar-strong: #ffffff;
+    --sidebar-accent: #ff5a5a;
+    --logo-tile: #bc0202;
+    --logo-heart: #ffffff;
+  }
+}
+:root[data-palette="crimson"][data-theme="dark"] {
+  --background: #000000;
+  --foreground: #ffeaea;
+  --card: #160303;
+  --card-2: #230505;
+  --muted: #c9a3a3;
+  --line: #3d0a0a;
+  --brand: #e01a1a;
+  --brand-strong: #ff3b3b;
+  --brand-soft: #3a0606;
+  --on-brand: #ffffff;
+  --chart-1: #f03a3a;
+  --chart-2: #6a88da;
+  --sidebar: #000000;
+  --sidebar-line: #2a0000;
+  --sidebar-active: #830000;
+  --sidebar-text: #d9bdbd;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #ff5a5a;
+  --logo-tile: #bc0202;
+  --logo-heart: #ffffff;
+}
+
+/* Sky & Mint: 30AFFF · 92EEFF · D8FFC5 · C4F7CA */
+:root[data-palette="sky"] {
+  --background: #f2fff0;
+  --foreground: #08324a;
+  --card: #ffffff;
+  --card-2: #e9fbea;
+  --muted: #4a6b78;
+  --line: #c4f7ca;
+  --brand: #0a7fc2;
+  --brand-strong: #0777b8;
+  --brand-soft: #ddf6ff;
+  --on-brand: #ffffff;
+  --chart-1: #1e90e0;
+  --chart-2: #e8590c;
+  --sidebar: #0a2a3d;
+  --sidebar-line: #113a50;
+  --sidebar-active: #1b6f9e;
+  --sidebar-text: #b5d6e0;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #92eeff;
+  --logo-tile: #d8ffc5;
+  --logo-heart: #0b8fd9;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="sky"]:not([data-theme="light"]) {
+    --background: #07202e;
+    --foreground: #e9fff0;
+    --card: #0c2c3e;
+    --card-2: #113a50;
+    --muted: #9ec3cc;
+    --line: #1b4d66;
+    --brand: #30afff;
+    --brand-strong: #92eeff;
+    --brand-soft: #123f57;
+    --on-brand: #07202e;
+    --chart-1: #1f9be8;
+    --chart-2: #dc6620;
+    --sidebar: #04161f;
+    --sidebar-line: #113a50;
+    --sidebar-active: #1b6f9e;
+    --sidebar-text: #b5d6e0;
+    --sidebar-strong: #ffffff;
+    --sidebar-accent: #92eeff;
+    --logo-tile: #d8ffc5;
+    --logo-heart: #0b8fd9;
+  }
+}
+:root[data-palette="sky"][data-theme="dark"] {
+  --background: #07202e;
+  --foreground: #e9fff0;
+  --card: #0c2c3e;
+  --card-2: #113a50;
+  --muted: #9ec3cc;
+  --line: #1b4d66;
+  --brand: #30afff;
+  --brand-strong: #92eeff;
+  --brand-soft: #123f57;
+  --on-brand: #07202e;
+  --chart-1: #1f9be8;
+  --chart-2: #dc6620;
+  --sidebar: #04161f;
+  --sidebar-line: #113a50;
+  --sidebar-active: #1b6f9e;
+  --sidebar-text: #b5d6e0;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #92eeff;
+  --logo-tile: #d8ffc5;
+  --logo-heart: #0b8fd9;
+}
+
+/* Ocean Blue: E3F2FD · 90CAF9 · 2196F3 · 0D47A1 */
+:root[data-palette="ocean"] {
+  --background: #e3f2fd;
+  --foreground: #0a2540;
+  --card: #ffffff;
+  --card-2: #f1f8fe;
+  --muted: #4b6480;
+  --line: #c9e3f9;
+  --brand: #1976d2;
+  --brand-strong: #0d47a1;
+  --brand-soft: #d6ebfc;
+  --on-brand: #ffffff;
+  --chart-1: #1976d2;
+  --chart-2: #e8590c;
+  --sidebar: #0b2f6b;
+  --sidebar-line: #13428f;
+  --sidebar-active: #1976d2;
+  --sidebar-text: #bfd9f5;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #90caf9;
+  --logo-tile: #e3f2fd;
+  --logo-heart: #1976d2;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="ocean"]:not([data-theme="light"]) {
+    --background: #071a33;
+    --foreground: #e3f2fd;
+    --card: #0c2647;
+    --card-2: #11315a;
+    --muted: #9db8d6;
+    --line: #1a4275;
+    --brand: #90caf9;
+    --brand-strong: #bbdefb;
+    --brand-soft: #13406f;
+    --on-brand: #071a33;
+    --chart-1: #3d8fdd;
+    --chart-2: #dc6620;
+    --sidebar: #041228;
+    --sidebar-line: #0d2f5c;
+    --sidebar-active: #1976d2;
+    --sidebar-text: #bfd9f5;
+    --sidebar-strong: #ffffff;
+    --sidebar-accent: #90caf9;
+    --logo-tile: #e3f2fd;
+    --logo-heart: #1976d2;
+  }
+}
+:root[data-palette="ocean"][data-theme="dark"] {
+  --background: #071a33;
+  --foreground: #e3f2fd;
+  --card: #0c2647;
+  --card-2: #11315a;
+  --muted: #9db8d6;
+  --line: #1a4275;
+  --brand: #90caf9;
+  --brand-strong: #bbdefb;
+  --brand-soft: #13406f;
+  --on-brand: #071a33;
+  --chart-1: #3d8fdd;
+  --chart-2: #dc6620;
+  --sidebar: #041228;
+  --sidebar-line: #0d2f5c;
+  --sidebar-active: #1976d2;
+  --sidebar-text: #bfd9f5;
+  --sidebar-strong: #ffffff;
+  --sidebar-accent: #90caf9;
+  --logo-tile: #e3f2fd;
+  --logo-heart: #1976d2;
 }
 
 @theme inline {
@@ -101,7 +406,10 @@
   --color-sidebar: var(--sidebar);
   --color-sidebar-line: var(--sidebar-line);
   --color-sidebar-text: var(--sidebar-text);
-  --color-brand-300: #5eead4;
+  --color-on-brand: var(--on-brand);
+  --color-sidebar-strong: var(--sidebar-strong);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-active: var(--sidebar-active);
   --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
@@ -152,7 +460,7 @@ input, select, textarea {
   font-weight: 600;
   font-size: 0.925rem;
   background: var(--brand);
-  color: white;
+  color: var(--on-brand);
   transition: background 0.15s, opacity 0.15s;
 }
 .btn:hover { background: var(--brand-strong); }
