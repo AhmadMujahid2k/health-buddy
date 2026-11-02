@@ -12,6 +12,8 @@ import { Streaks } from "@/components/Streaks";
 import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
 import { hiddenSections } from "@/lib/sections";
 import { kindOf, planEvents } from "@/lib/events";
+import { realBurn } from "@/lib/tdee";
+import { RealBurnCard } from "@/components/RealBurnCard";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
 import { Activity, AlertTriangle, CalendarHeart, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
 
@@ -225,6 +227,11 @@ async function Dashboard() {
           ) : null}
         </section>
         )}
+
+        {show("realburn") && (() => {
+          const rb = realBurn(stats.filter((s) => s.date <= t), t);
+          return rb ? <RealBurnCard data={rb} /> : null;
+        })()}
 
         {(showStreaks || showJourney) && (
         <section className={`grid gap-5 ${showStreaks && showJourney ? "lg:grid-cols-5" : ""}`}>
