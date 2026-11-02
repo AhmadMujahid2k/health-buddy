@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS profile (
   stride_m REAL NOT NULL DEFAULT 0.75,
   eat_start TEXT,                  -- "HH:MM" eating window, for the dashboard clock
   eat_end TEXT,
-  food_context TEXT
+  food_context TEXT,
+  hidden_sections TEXT             -- comma-separated dashboard sections switched off in Settings
 );
 
 -- One row per day: body + activity numbers (food lives in entries)
@@ -112,6 +113,7 @@ export const PROFILE_SEED = {
   eat_start: null,
   eat_end: null,
   food_context: null,
+  hidden_sections: null,
 };
 
 // [name, aliases, unit, kcal, protein, note]
@@ -201,6 +203,7 @@ export function migrate(db) {
   const dayCols = db.prepare("PRAGMA table_info(days)").all().map((c) => c.name);
   if (!dayCols.includes("distance_km")) db.exec("ALTER TABLE days ADD COLUMN distance_km REAL");
   if (!cols.includes("food_context")) db.exec("ALTER TABLE profile ADD COLUMN food_context TEXT");
+  if (!cols.includes("hidden_sections")) db.exec("ALTER TABLE profile ADD COLUMN hidden_sections TEXT");
   for (const [c, t] of [["next_milestone_weight", "REAL"], ["next_milestone_date", "TEXT"], ["next_milestone_label", "TEXT"]]) {
     if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} ${t}`);
   }

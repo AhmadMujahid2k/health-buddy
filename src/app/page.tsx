@@ -10,6 +10,7 @@ import { JourneyMap } from "@/components/JourneyMap";
 import { LiveBurn } from "@/components/LiveBurn";
 import { Streaks } from "@/components/Streaks";
 import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
+import { hiddenSections } from "@/lib/sections";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
 import { Activity, AlertTriangle, CheckCircle2, Download, Flame, Plus, Scale, TrendingDown } from "lucide-react";
 
@@ -79,6 +80,13 @@ async function Dashboard() {
   const good = status === "ON TRACK" || status === "GOAL REACHED";
   const ahead = planned != null ? planned - current : null;
 
+  const hidden = hiddenSections(p.hidden_sections);
+  const show = (key: string) => !hidden.has(key);
+  const showToday = show("today");
+  const showMilestone = show("milestone") && m != null;
+  const showStreaks = show("streaks");
+  const showJourney = show("journey");
+
   return (
     <>
       <PageHeader
@@ -93,19 +101,23 @@ async function Dashboard() {
       />
 
       <div className="space-y-5">
-        <InsightsTicker items={getInsights(p, stats, t)} />
+        {show("insights") && <InsightsTicker items={getInsights(p, stats, t)} />}
 
         {/* KPIs */}
+        {show("kpis") && (
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <KpiCard icon={Scale} label="Current weight" value={`${fmt(current, 2)} kg`} sub={`${lost >= 0 ? "−" : "+"}${fmt(Math.abs(lost), 2)} kg since start`} />
           <KpiCard icon={Activity} label="BMI" value={fmt(b, 1)} sub={bmiCategory(b)} />
           <KpiCard icon={Flame} label="Est. fat lost" value={`${fmt(totalDeficit / 7700, 2)} kg`} sub={`${fmt(totalDeficit)} kcal total deficit`} tone={totalDeficit > 0 ? "good" : undefined} />
           <KpiCard icon={TrendingDown} label="Avg deficit · 7 days" value={`${fmt(avg((s) => s.deficit))} kcal`} sub={`avg intake ${fmt(avg((s) => s.intake))} kcal`} />
         </section>
+        )}
 
-        <section className="grid gap-5 lg:grid-cols-3">
+        {(showToday || showMilestone) && (
+        <section className={`grid gap-5 ${showToday && showMilestone ? "lg:grid-cols-3" : ""}`}>
           {/* Today */}
-          <div className="card lg:col-span-2">
+          {showToday && (
+          <div className={`card ${showMilestone ? "lg:col-span-2" : ""}`}>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-bold">Today</h2>
               <span className="text-xs text-muted">Target {fmt(p.kcal_target)} kcal · {p.protein_target} g protein</span>
@@ -135,9 +147,10 @@ async function Dashboard() {
               <Stat label="Watch kcal counted" value={fmt(todayS.activeCounted)} sub={todayS.activeKcal ? `of ${fmt(todayS.activeKcal)} on watch` : undefined} />
             </div>
           </div>
+          )}
 
           {/* Milestone goal */}
-          {m ? (
+          {showMilestone && m ? (
             <div className="card flex flex-col">
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -181,19 +194,26 @@ async function Dashboard() {
             </div>
           ) : null}
         </section>
+        )}
 
-        <section className="grid gap-5 lg:grid-cols-5">
-          <div className="lg:col-span-2">
+        {(showStreaks || showJourney) && (
+        <section className={`grid gap-5 ${showStreaks && showJourney ? "lg:grid-cols-5" : ""}`}>
+          {showStreaks && (
+          <div className={showJourney ? "lg:col-span-2" : ""}>
             <Streaks items={getStreaks(p, stats, t)} />
           </div>
-          <div className="min-w-0 lg:col-span-3">
+          )}
+          {showJourney && (
+          <div className={`min-w-0 ${showStreaks ? "lg:col-span-3" : ""}`}>
             <JourneyMap
               name={JOURNEY.name}
               stops={JOURNEY.stops}
               totalKm={stats.filter((s) => s.date <= t).reduce((a, s) => a + (s.km ?? 0), 0)}
             />
           </div>
+          )}
         </section>
+        )}
 
         <Charts
           days={stats.map((s) => ({
@@ -209,9 +229,11 @@ async function Dashboard() {
           kcalTarget={p.kcal_target}
           proteinTarget={p.protein_target}
           stepTarget={p.step_target}
+          hidden={[...hidden]}
         />
 
         {/* Weekly */}
+        {show("weekly") && (
         <section className="card overflow-x-auto">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-bold">Weekly summary</h2>
@@ -283,6 +305,7 @@ async function Dashboard() {
             </tbody>
           </table>
         </section>
+        )}
         <p className="text-center text-xs text-muted">
           Burn = BMR (Mifflin-St Jeor) × {p.activity_factor} + watch kcal for steps above {fmt(p.base_steps ?? 3000)} · 7,700 kcal ≈ 1 kg of fat
         </p>

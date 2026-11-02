@@ -38,67 +38,81 @@ function Panel({ title, sub, children }: { title: string; sub?: string; children
 }
 
 export function Charts({
-  days, kcalTarget, proteinTarget, stepTarget,
-}: { days: Day[]; kcalTarget: number; proteinTarget: number; stepTarget: number }) {
+  days, kcalTarget, proteinTarget, stepTarget, hidden = [],
+}: { days: Day[]; kcalTarget: number; proteinTarget: number; stepTarget: number; hidden?: string[] }) {
   const last14 = days.slice(-14);
   const weights = days.flatMap((d) => [d.weight, d.goal]).filter((v): v is number => v != null);
   const lo = Math.floor(Math.min(...weights) - 1);
   const hi = Math.ceil(Math.max(...weights) + 0.5);
+  const panels = [
+    { key: "chart_weight", panel: (
+        <Panel title="Weight trend" sub="Morning weigh-ins vs your goal plan (kg)">
+          <ComposedChart {...size} data={days} margin={{ left: -18, right: 8, top: 8 }}>
+            {grid}
+            <XAxis dataKey="date" {...axis} />
+            <YAxis domain={[lo, hi]} {...axis} />
+            <Tooltip {...tip} />
+            {legend}
+            <Line isAnimationActive={false} name="Plan" dataKey="goal" stroke={S2} strokeWidth={2} strokeDasharray="6 5" dot={false} />
+            <Line isAnimationActive={false} name="Weight" dataKey="weight" stroke={S1} strokeWidth={2} connectNulls
+              dot={{ r: 4, fill: S1, stroke: "var(--card)", strokeWidth: 2 }} activeDot={{ r: 6, stroke: "var(--card)", strokeWidth: 2 }} />
+          </ComposedChart>
+        </Panel>
+    ) },
+    { key: "chart_calories", panel: (
+        <Panel title="Calories in vs out" sub={`Last 14 days (kcal) · dashed line = ${kcalTarget.toLocaleString()} target`}>
+          <BarChart {...size} data={last14} margin={{ left: -10, right: 8, top: 8 }} barGap={2} barCategoryGap="22%">
+            {grid}
+            <XAxis dataKey="date" {...axis} />
+            <YAxis {...axis} />
+            <Tooltip {...tip} />
+            {legend}
+            {target(kcalTarget)}
+            <Bar isAnimationActive={false} name="Eaten" dataKey="intake" fill={S2} radius={[4, 4, 0, 0]} maxBarSize={22} />
+            <Bar isAnimationActive={false} name="Burned" dataKey="burn" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={22} />
+          </BarChart>
+        </Panel>
+    ) },
+    { key: "chart_protein", panel: (
+        <Panel title="Protein" sub={`Grams per day · dashed line = ${proteinTarget} g target`}>
+          <BarChart {...size} data={last14} margin={{ left: -18, right: 8, top: 8 }} barCategoryGap="30%">
+            {grid}
+            <XAxis dataKey="date" {...axis} />
+            <YAxis {...axis} domain={[0, (max: number) => Math.max(max, proteinTarget) + 10]} />
+            <Tooltip {...tip} />
+            {target(proteinTarget)}
+            <Bar isAnimationActive={false} name="Protein (g)" dataKey="protein" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={28} />
+          </BarChart>
+        </Panel>
+    ) },
+    { key: "chart_steps", panel: (
+        <Panel title="Steps" sub={`Daily steps and distance · dashed line = ${stepTarget.toLocaleString()} target`}>
+          <BarChart {...size} data={last14} margin={{ left: -8, right: 8, top: 8 }} barCategoryGap="30%">
+            {grid}
+            <XAxis dataKey="date" {...axis} />
+            <YAxis {...axis} domain={[0, (max: number) => Math.max(max, stepTarget) * 1.08]} tickFormatter={(v: number) => (v ? `${+(v / 1000).toFixed(1)}k` : "0")} allowDecimals={false} />
+            <Tooltip
+              {...tip}
+              formatter={(v, _n, item) => [
+                `${Number(v).toLocaleString()}${item.payload.km != null ? ` · ${item.payload.km} km` : ""}`,
+                "Steps",
+              ]}
+            />
+            {target(stepTarget)}
+            <Bar isAnimationActive={false} name="Steps" dataKey="steps" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={28} />
+          </BarChart>
+        </Panel>
+    ) },
+  ].filter((c) => !hidden.includes(c.key));
+  if (!panels.length) return null;
   return (
     <div className="grid min-w-0 gap-5 lg:grid-cols-2">
-      <Panel title="Weight trend" sub="Morning weigh-ins vs your goal plan (kg)">
-        <ComposedChart {...size} data={days} margin={{ left: -18, right: 8, top: 8 }}>
-          {grid}
-          <XAxis dataKey="date" {...axis} />
-          <YAxis domain={[lo, hi]} {...axis} />
-          <Tooltip {...tip} />
-          {legend}
-          <Line isAnimationActive={false} name="Plan" dataKey="goal" stroke={S2} strokeWidth={2} strokeDasharray="6 5" dot={false} />
-          <Line isAnimationActive={false} name="Weight" dataKey="weight" stroke={S1} strokeWidth={2} connectNulls
-            dot={{ r: 4, fill: S1, stroke: "var(--card)", strokeWidth: 2 }} activeDot={{ r: 6, stroke: "var(--card)", strokeWidth: 2 }} />
-        </ComposedChart>
-      </Panel>
-
-      <Panel title="Calories in vs out" sub={`Last 14 days (kcal) · dashed line = ${kcalTarget.toLocaleString()} target`}>
-        <BarChart {...size} data={last14} margin={{ left: -10, right: 8, top: 8 }} barGap={2} barCategoryGap="22%">
-          {grid}
-          <XAxis dataKey="date" {...axis} />
-          <YAxis {...axis} />
-          <Tooltip {...tip} />
-          {legend}
-          {target(kcalTarget)}
-          <Bar isAnimationActive={false} name="Eaten" dataKey="intake" fill={S2} radius={[4, 4, 0, 0]} maxBarSize={22} />
-          <Bar isAnimationActive={false} name="Burned" dataKey="burn" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={22} />
-        </BarChart>
-      </Panel>
-
-      <Panel title="Protein" sub={`Grams per day · dashed line = ${proteinTarget} g target`}>
-        <BarChart {...size} data={last14} margin={{ left: -18, right: 8, top: 8 }} barCategoryGap="30%">
-          {grid}
-          <XAxis dataKey="date" {...axis} />
-          <YAxis {...axis} domain={[0, (max: number) => Math.max(max, proteinTarget) + 10]} />
-          <Tooltip {...tip} />
-          {target(proteinTarget)}
-          <Bar isAnimationActive={false} name="Protein (g)" dataKey="protein" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={28} />
-        </BarChart>
-      </Panel>
-
-      <Panel title="Steps" sub={`Daily steps and distance · dashed line = ${stepTarget.toLocaleString()} target`}>
-        <BarChart {...size} data={last14} margin={{ left: -8, right: 8, top: 8 }} barCategoryGap="30%">
-          {grid}
-          <XAxis dataKey="date" {...axis} />
-          <YAxis {...axis} domain={[0, (max: number) => Math.max(max, stepTarget) * 1.08]} tickFormatter={(v: number) => (v ? `${+(v / 1000).toFixed(1)}k` : "0")} allowDecimals={false} />
-          <Tooltip
-            {...tip}
-            formatter={(v, _n, item) => [
-              `${Number(v).toLocaleString()}${item.payload.km != null ? ` · ${item.payload.km} km` : ""}`,
-              "Steps",
-            ]}
-          />
-          {target(stepTarget)}
-          <Bar isAnimationActive={false} name="Steps" dataKey="steps" fill={S1} radius={[4, 4, 0, 0]} maxBarSize={28} />
-        </BarChart>
-      </Panel>
+      {panels.map((c, i) => (
+        // an odd one out at the end takes the full row
+        <div key={c.key} className={`min-w-0 ${i === panels.length - 1 && panels.length % 2 ? "lg:col-span-2" : ""}`}>
+          {c.panel}
+        </div>
+      ))}
     </div>
   );
 }

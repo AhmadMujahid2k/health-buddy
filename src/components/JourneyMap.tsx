@@ -55,7 +55,7 @@ export function JourneyMap({
       </p>
 
       <div className="-mx-1 overflow-x-auto px-1">
-      <svg viewBox="0 0 608 130" className="mt-2 h-auto w-full min-w-[520px]" role="img" aria-label={`${totalKm.toFixed(1)} km along ${name}`}>
+      <svg viewBox="0 0 608 130" className="mx-auto mt-2 h-auto w-full max-w-[720px] min-w-[520px]" role="img" aria-label={`${totalKm.toFixed(1)} km along ${name}`}>
         <path d={ROUTE} fill="none" stroke="var(--line)" strokeWidth={6} strokeLinecap="round" />
         <path
           ref={pathRef}

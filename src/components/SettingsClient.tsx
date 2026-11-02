@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/lib/types";
+import { hiddenSections, SECTIONS } from "@/lib/sections";
 import { PageHeader } from "./ui";
 
 const FIELDS: { key: keyof Profile; label: string; type?: string; step?: string }[] = [
@@ -34,6 +35,14 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
   const router = useRouter();
   const [v, setV] = useState<Record<string, string | number | null>>({ ...profile });
   const [saved, setSaved] = useState(false);
+  const hidden = hiddenSections(v.hidden_sections as string | null);
+  const toggle = (key: string) => {
+    const next = new Set(hidden);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setV({ ...v, hidden_sections: [...next].join(",") });
+    setSaved(false);
+  };
   return (
     <div className="space-y-4">
       <PageHeader title="Settings" subtitle="Your profile, daily targets and goal" />
@@ -75,6 +84,18 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
             onChange={(e) => { setV({ ...v, food_context: e.target.value }); setSaved(false); }}
           />
         </label>
+      </section>
+      <section className="card">
+        <h2 className="font-bold">Dashboard sections</h2>
+        <p className="mb-3 text-xs text-muted">Switch off what you don&apos;t want to see. The rest of the dashboard closes the gap.</p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {SECTIONS.map((s) => (
+            <label key={s.key} className="flex cursor-pointer items-center gap-2.5 rounded-lg border border-line px-3 py-2 text-sm hover:bg-card-2">
+              <input type="checkbox" className="h-4 w-4 accent-[var(--brand)]" checked={!hidden.has(s.key)} onChange={() => toggle(s.key)} />
+              {s.label}
+            </label>
+          ))}
+        </div>
       </section>
       <button
         className="btn"

@@ -33,6 +33,8 @@ export interface Profile {
   eat_end: string | null;
   /** free text sent to Claude with every estimate: cuisine, cooking oil, usual recipes */
   food_context: string | null;
+  /** comma-separated dashboard section keys that are switched off (see lib/sections.ts) */
+  hidden_sections: string | null;
 }
 
 export interface DayRow {
