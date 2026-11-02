@@ -43,17 +43,48 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
   with an on-track / behind status and the weekly pace you need.
 - **Charts and weekly summary.** Weight vs plan, calories in vs out, protein, steps and distance. The weekly table
   groups *daily averages* and *week totals* and shows the change from the week before.
+- **Next event strip.** Your next dawat or birthday within a month, with your forecast weight and today's save-up.
+- **Today is "in progress".** A half-logged day never counts as a full day's deficit: totals, averages, streaks
+  and fat lost only include finished days.
+- **Choose your sections.** Switch any part of the dashboard off in Settings; the rest closes the gap.
 
-### Real burn, events and strength
-- **Your real burn.** Compares what you ate with how your smoothed weight actually moved over the last 3 weeks and
-  works out what you really burn per day, next to the formula's guess. If the formula is off, it tells you by how much
-  and what to change. It needs most days logged and gets steadier every week.
-- **Events.** Add dawats, weddings, dinners out, birthdays and anniversaries (yearly ones repeat). Each shows your
-  forecast weight on the day, when you'll reach an optional weight goal, a plan to save up the extra calories over the
-  days before, and plate tips for that kind of meal. The next one shows on the dashboard.
-- **Strength.** Log three full-body home workouts (A → B → C) set by set. Each exercise shows what you did last time and
-  what to aim for next: add reps until every set hits the top of the range, then move up a weight, based on the
-  dumbbells and plates you actually have. A progress table tracks each lift's estimated one-rep max.
+### Your real burn
+Formulas guess what you burn. Health Buddy also **measures** it: it compares what you ate with how your smoothed
+weight actually moved over the last 3 weeks and works backwards to your real daily burn (the approach adaptive apps
+like MacroFactor use), right next to the formula's number.
+
+- **Formula close?** Your deficits are real.
+- **Real burn lower?** It tells you how much less to eat (or how many more steps) to stay on pace.
+- **Real burn higher?** Usually water loss early on, or food counted on the high side.
+- Weigh-ins are smoothed first, so a salty dinner doesn't throw it off. It needs most days logged and shows the
+  estimate for earlier weeks, so you can watch your burn fall as you get lighter.
+
+![Real burn](docs/screenshots/real-burn.png)
+
+### Events
+Plan around the meals you can't skip: dawats, weddings, dinners out, birthdays, anniversaries.
+
+- **Weight on the day:** where your trend puts you on that date.
+- **Weight goal (optional):** the date you'll reach it at your current pace, and how many kcal a day you're short or
+  have to spare.
+- **Save-up plan:** enter the extra kcal you expect and it spreads them over the days before
+  (e.g. 1,000 over 3 days = ~330 less a day).
+- **Plate plan:** tips for that kind of meal, such as protein first, one round of rice, zero drinks.
+- **Yearly events repeat**, past one-offs link to the log for that day, and the next event shows on the dashboard.
+
+![Events](docs/screenshots/events.png)
+
+### Strength
+Three full-body home workouts (A → B → C, any 3 days a week), logged set by set.
+
+- Each exercise shows **what you did last time** and **what to aim for**: add reps until every set reaches the top of
+  the range, then move up a weight, using the dumbbells and plates you actually own (5/10/15 kg dumbbells, +10 kg
+  on the bar).
+- Light weeks first (2 sets for the first 6 sessions, then 3), a this-week counter, and a **progress table** with each
+  lift's estimated one-rep max.
+- Edit the exercises in `src/lib/workouts.ts`.
+
+![Strength](docs/screenshots/strength.png)
 
 ### History
 - One row per day with weight change (▼ / ▲), steps and km, protein, calories eaten and the day's deficit with its
@@ -65,8 +96,6 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 - **Five colour palettes** (Ocean Blue, Navy & Cream, Electric Indigo, Crimson Black, Sky & Mint), each with a light
   and a dark version, plus Light / Dark / Auto. Pick them in the sidebar.
 - Chart colours for every palette are checked to be colour-blind safe. Status colours stay the same in all of them.
-- **Choose your dashboard.** Switch any section off in Settings (insights, cards, charts, streaks, journey…) and the
-  rest closes the gap.
 - Works on a phone-sized screen, and animations turn off when your system asks for reduced motion.
 
 ### Honest maths
@@ -104,6 +133,36 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 Dashboard extras (streaks, insights, journey route) live in `src/lib/insights.ts`, real burn in `src/lib/tdee.ts`,
 event planning in `src/lib/events.ts` and the workouts and progression rules in `src/lib/workouts.ts`. Palettes are CSS variables in
 `src/app/globals.css`, switched with `<html data-palette>`.
+
+## Logging from scripts (or an AI coach)
+
+Everything the app does goes through a small JSON API on `127.0.0.1:4782`, so you can log from a script, a shortcut,
+or a chat assistant that knows your day. A few useful calls:
+
+```bash
+# a whole day (or part of one): meals + weight/steps; send only what you have
+curl -X POST http://127.0.0.1:4782/api/day-log -H 'content-type: application/json' -d '{
+  "date": "2026-11-02",
+  "entries": [{ "meal": "breakfast", "raw_text": "2 boiled eggs, chai",
+                "items": [{ "name": "Egg, boiled", "qty": 2, "unit": "piece", "kcal": 150, "protein": 12 }] }],
+  "stats": { "weight": 82.4, "steps": 9200, "distance_km": 7.1, "active_kcal": 480 }
+}'
+
+# a workout session (replaces that date + workout)
+curl -X POST http://127.0.0.1:4782/api/workouts -H 'content-type: application/json' -d '{
+  "date": "2026-11-02", "workout": "A",
+  "sets": [{ "exercise": "Goblet squat (to the bench)", "set_no": 1, "weight": 10, "reps": 12 }]
+}'
+
+# an event
+curl -X POST http://127.0.0.1:4782/api/events -H 'content-type: application/json' -d '{
+  "name": "Ali'"'"'s wedding", "date": "2026-12-12", "kind": "wedding", "extra_kcal": 1000, "bank_days": 3
+}'
+```
+
+Meals are `breakfast`, `lunch`, `snack`, `dinner` or `drink`. Dates can't be in the future (events can), numbers are
+range-checked, and a bad request gets a `400` with the reason. Other routes: `GET /api/export` (CSV),
+`PUT /api/days/:date`, `PUT /api/profile`, `/api/foods`, `/api/entries/:id`, `/api/items/:id`.
 
 ## Getting started
 
@@ -177,7 +236,7 @@ systemctl --user enable --now health-buddy
 | `npm run dev` | Dev server with hot reload (http://127.0.0.1:4782) |
 | `npm run build` / `npm start` | Production build / server |
 | `npm run typecheck` | TypeScript check |
-| `npm run demo` | Build a demo database with a made-up user, then `HEALTH_DB=data/demo.db npm start` |
+| `npm run demo` | Build a demo database (4 weeks, events, workouts) for a made-up user, then `HEALTH_DB=data/demo.db npm start` |
 | `node scripts/backup-db.mjs [out.db]` | Safe snapshot of the live database |
 | `npm run import:csv [file]` | Import a daily CSV log (see `scripts/import-csv.mjs` for the columns) |
 
