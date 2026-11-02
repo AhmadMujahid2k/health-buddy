@@ -87,24 +87,26 @@ export function suggest(ex: Exercise, last: SetRow[] | undefined): Suggestion {
   const best = Math.max(...last.map((s) => s.reps));
 
   if (!topped) {
-    const reps = Math.min(hi, best + (ex.unit === "sec" ? 5 : 1));
-    return { weight, reps, text: `${weight != null ? `${weight} kg × ` : ""}${reps}${u} (+${reps - best} on your best set)` };
+    // bring the weakest set up; the best set already shows what's possible
+    const worst = Math.min(...last.map((s) => s.reps));
+    const reps = Math.min(Math.max(hi, best), worst + (ex.unit === "sec" ? 5 : 1));
+    return { weight, reps, text: `${weight != null ? `${weight} kg × ` : ""}${reps}${u} on every set` };
   }
   if (weight == null && (ex.equipment === "barbell" || ex.equipment === "curlbar")) {
     return { weight: null, reps: lo, text: "Enter the bar's weight to track progress" };
   }
   if (ex.equipment === "bodyweight" || weight == null) {
-    if (ex.unit === "sec") return { weight, reps: hi + 5, text: `${hi + 5} sec: you topped ${hi}` };
+    if (ex.unit === "sec") return { weight, reps: best + 5, text: `${best + 5} sec on every set` };
     return {
       weight: ex.equipment === "bodyweight" ? null : DUMBBELLS[0],
-      reps: ex.equipment === "bodyweight" ? hi + 2 : lo,
-      text: ex.equipment === "bodyweight" ? `${hi + 2} reps, slower` : `Add weight: ${DUMBBELLS[0]} kg × ${lo}`,
+      reps: ex.equipment === "bodyweight" ? best + 2 : lo,
+      text: ex.equipment === "bodyweight" ? `${best + 2} reps, slower` : `Add weight: ${DUMBBELLS[0]} kg × ${lo}`,
     };
   }
   if (ex.equipment === "dumbbell") {
     const next = DUMBBELLS.find((d) => d > weight);
     if (next) return { weight: next, reps: lo, text: `Move up: ${next} kg × ${lo}` };
-    return { weight, reps: hi + 2, text: `${weight} kg is your heaviest: do ${hi + 2} reps with a 3-second lower` };
+    return { weight, reps: best + 1, text: `${weight} kg is your heaviest: ${best + 1} reps with a 3-second lower` };
   }
   return { weight: weight + BAR_STEP, reps: lo, text: `Move up: ${weight + BAR_STEP} kg × ${lo} (add a 5 kg plate each side)` };
 }

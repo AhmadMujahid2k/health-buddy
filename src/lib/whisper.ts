@@ -25,7 +25,10 @@ export function whisperReady(): { ok: boolean; missing?: string } {
 
 /** `wav` must be 16 kHz mono 16-bit PCM — the browser converts before uploading. */
 export async function transcribe(wav: Buffer, language = "en"): Promise<string> {
-  const file = path.join(os.tmpdir(), `hb-voice-${process.pid}-${Date.now()}.wav`);
+  if (!/^[a-z]{2}$|^auto$/.test(language)) language = "en";
+  // private temp folder (0700, random name), so nothing else on the machine can swap the file
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "hb-voice-"));
+  const file = path.join(dir, "rec.wav");
   fs.writeFileSync(/*turbopackIgnore: true*/ file, wav);
   try {
     const threads = String(Math.max(2, Math.min(8, os.cpus().length - 1)));
@@ -42,6 +45,6 @@ export async function transcribe(wav: Buffer, language = "en"): Promise<string> 
       .replace(/\s+/g, " ")
       .trim();
   } finally {
-    fs.rmSync(/*turbopackIgnore: true*/ file, { force: true });
+    fs.rmSync(/*turbopackIgnore: true*/ dir, { recursive: true, force: true });
   }
 }

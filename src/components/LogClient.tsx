@@ -8,6 +8,7 @@ import type { DayRow, DraftItem, Entry, Meal } from "@/lib/types";
 import { MEALS } from "@/lib/types";
 import { Bar, PageHeader } from "./ui";
 import { VoiceButton } from "./VoiceButton";
+import { failed } from "@/lib/http";
 
 const MEAL_LABEL: Record<Meal, string> = {
   breakfast: "Breakfast", lunch: "Lunch", snack: "Snack", dinner: "Dinner", drink: "Drink",
@@ -109,7 +110,7 @@ export function LogClient({
     setBusy("save");
     const byMeal = new Map<Meal, Draft[]>();
     for (const d of draft ?? []) if (d.name.trim()) byMeal.set(d.meal, [...(byMeal.get(d.meal) ?? []), d]);
-    await fetch("/api/day-log", {
+    const res = await fetch("/api/day-log", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -123,6 +124,12 @@ export function LogClient({
         stats: dayV,
       }),
     });
+    const err = await failed(res);
+    if (err) {
+      setBusy(null);
+      setMsg(`Not saved: ${err}`);
+      return;
+    }
     setDraft(null);
     setFound({});
     setText("");
@@ -337,7 +344,10 @@ function DayForm({
       <button
         className="btn btn-ghost"
         onClick={async () => {
-          await fetch(`/api/days/${date}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) });
+          const err = await failed(
+            await fetch(`/api/days/${date}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) }),
+          );
+          if (err) return alert(`Not saved: ${err}`);
           setSaved(true);
           router.refresh();
         }}

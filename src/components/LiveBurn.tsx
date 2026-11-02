@@ -9,8 +9,9 @@ const toMin = (hhmm: string | null) => {
 };
 
 const dur = (min: number) => {
-  const h = Math.floor(min / 60);
-  const m = Math.round(min % 60);
+  const total = Math.round(min);
+  const h = Math.floor(total / 60);
+  const m = total % 60;
   return h ? `${h}h ${m}m` : `${m}m`;
 };
 
@@ -35,10 +36,13 @@ export function LiveBurn({
   const start = toMin(eatStart);
   const end = toMin(eatEnd);
   let windowText: string | null = null;
-  if (start != null && end != null) {
-    if (minNow < start) windowText = `Fasting · eating window opens in ${dur(start - minNow)}`;
-    else if (minNow < end) windowText = `Eating window · closes in ${dur(end - minNow)}`;
-    else windowText = `Fasting for ${dur(minNow - end)} · window opens at ${eatStart}`;
+  if (start != null && end != null && start !== end) {
+    // minutes until a clock time, wrapping past midnight (so a 12:00–00:30 window works)
+    const until = (m: number) => (m - minNow + 1440) % 1440;
+    const open = start < end ? minNow >= start && minNow < end : minNow >= start || minNow < end;
+    windowText = open
+      ? `Eating window · closes in ${dur(until(end))}`
+      : `Fasting for ${dur((minNow - end + 1440) % 1440)} · eating window opens in ${dur(until(start))}`;
   }
 
   return (

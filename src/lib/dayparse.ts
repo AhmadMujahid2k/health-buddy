@@ -29,7 +29,7 @@ const STAT_PATTERNS: { key: keyof DayStatsDraft; re: RegExp; read: (m: RegExpMat
   { key: "weight", re: /(\d{2,3}(?:[.,]\d{1,2})?)\s*(?:kgs?|kilos?)\b/i, read: (m) => num(m[1]) },
   // steps: "7k steps", "7,500 steps", "steps 7k", "total steps 6k"
   { key: "steps", re: /(\d+(?:[.,]\d+)?)\s*(k)?\s*steps?\b/i, read: (m) => Math.round(num(m[1].replace(",", "")) * (m[2] ? 1000 : 1)) },
-  { key: "steps", re: /steps?\s*(?:were|was|is|:|=)?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i, read: (m) => Math.round(num(m[1]) * (m[2] ? 1000 : 1)) },
+  { key: "steps", re: /steps?\s*(?:were|was|is|:|=)?\s*(\d+(?:[.,]\d+)?)\s*(k)?/i, read: (m) => Math.round(num(m[1].replace(",", "")) * (m[2] ? 1000 : 1)) },
   // distance: "7.48 km", "walked 5km"
   { key: "distance_km", re: /(\d+(?:[.,]\d+)?)\s*(?:km|kms|kilomet(?:er|re)s?)\b/i, read: (m) => num(m[1]) },
   // watch kcal: "350 kcal burnt", "345kcal from watch", "burnt 300 calories"
@@ -44,7 +44,7 @@ const STAT_PATTERNS: { key: keyof DayStatsDraft; re: RegExp; read: (m: RegExpMat
   { key: "water_l", re: new RegExp(String.raw`${N}\s*(?:l|ltr|liters?|litres?)\b(?:\s*(?:of\s*)?water)?`, "i"), read: (m) => avg(m[1], m[2]) },
   { key: "water_l", re: new RegExp(String.raw`water\s*(?:was|:|=)?\s*${N}\s*(?:l|ltr|liters?|litres?)?`, "i"), read: (m) => avg(m[1], m[2]) },
   // sleep: "slept 7 hours", "sleep 7-8 hours", "7h sleep"
-  { key: "sleep_h", re: new RegExp(String.raw`(?:slept|sleep|soya|soye|neend)\D{0,12}?${N}\s*(?:hours?|hrs?|ghante|h\b)?`, "i"), read: (m) => avg(m[1], m[2]) },
+  { key: "sleep_h", re: new RegExp(String.raw`(?:slept|sleep|soya|soye|neend)(?![^\d]{0,12}?\bat\b)\D{0,12}?${N}(?!\s*(?:am|pm|baje)\b)\s*(?:hours?|hrs?|ghante|h\b)?`, "i"), read: (m) => avg(m[1], m[2]) },
   { key: "sleep_h", re: new RegExp(String.raw`${N}\s*(?:hours?|hrs?|ghante|h)\b\s*(?:of\s*)?(?:sleep|neend)`, "i"), read: (m) => avg(m[1], m[2]) },
 ];
 

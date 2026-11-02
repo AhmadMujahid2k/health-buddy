@@ -41,7 +41,7 @@ export function RealBurnCard({ data }: { data: RealBurn }) {
       </div>
       {early && (
         <p className="mt-2 text-xs text-muted">
-          Under 4 weeks of data, the first days&apos; water and glycogen loss make the real burn read high. It gets more accurate every week.
+          Under 4 weeks of data this is still settling: early water loss and the smoothing lag pull it in opposite directions. It firms up every week.
         </p>
       )}
     </section>

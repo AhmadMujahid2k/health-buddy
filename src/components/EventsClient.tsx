@@ -6,6 +6,7 @@ import { PiggyBank, Plus, Repeat, Target, TrendingDown, UtensilsCrossed } from "
 import type { EventKind, EventRow } from "@/lib/types";
 import { KINDS, kindOf, PLATE_PLAN, type EventPlan } from "@/lib/events";
 import { PageHeader } from "./ui";
+import { failed } from "@/lib/http";
 
 type Form = {
   id?: number; name: string; date: string; kind: EventKind; yearly: boolean;
@@ -34,11 +35,14 @@ export function EventsClient({ plans, current, kcalTarget }: { plans: EventPlan[
 
   async function save() {
     if (!form) return;
-    await fetch(form.id ? `/api/events/${form.id}` : "/api/events", {
-      method: form.id ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const err = await failed(
+      await fetch(form.id ? `/api/events/${form.id}` : "/api/events", {
+        method: form.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      }),
+    );
+    if (err) return alert(`Not saved: ${err}`);
     setForm(null);
     router.refresh();
   }

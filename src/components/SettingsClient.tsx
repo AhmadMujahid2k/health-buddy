@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Profile } from "@/lib/types";
 import { hiddenSections, SECTIONS } from "@/lib/sections";
+import { failed } from "@/lib/http";
 import { PageHeader } from "./ui";
 
 const FIELDS: { key: keyof Profile; label: string; type?: string; step?: string }[] = [
@@ -100,7 +101,10 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
       <button
         className="btn"
         onClick={async () => {
-          await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) });
+          const err = await failed(
+            await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(v) }),
+          );
+          if (err) return alert(`Not saved: ${err}`);
           setSaved(true);
           router.refresh();
         }}

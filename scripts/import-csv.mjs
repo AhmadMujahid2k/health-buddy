@@ -30,7 +30,8 @@ function parseCsv(text) {
   return body.map((r) => Object.fromEntries(head.map((h, i) => [h, r[i] ?? ""])));
 }
 
-const num = (v) => (v === "" || v == null ? null : Number(v));
+const num = (v) => (v === "" || v == null || !Number.isFinite(Number(v)) ? null : Number(v));
+const isDate = (v) => /^\d{4}-\d{2}-\d{2}$/.test(v ?? "") && !Number.isNaN(Date.parse(v + "T00:00:00Z")) && new Date(v + "T00:00:00Z").toISOString().startsWith(v);
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
 db.pragma("foreign_keys = ON");
@@ -59,6 +60,10 @@ const insItem = db.prepare(
 let n = 0;
 db.transaction(() => {
   for (const r of rows) {
+    if (!isDate(r.date)) {
+      console.warn(`skipping row with a bad date: ${JSON.stringify(r.date)}`);
+      continue;
+    }
     upsertDay.run({
       date: r.date,
       weight: num(r.weight_kg),

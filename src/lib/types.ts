@@ -124,4 +124,6 @@ export interface DayStats {
   water: number | null;
   sleep: number | null;
   logged: boolean;
+  /** today (or later): still being logged, so not counted in totals, averages or streak breaks */
+  partial: boolean;
 }

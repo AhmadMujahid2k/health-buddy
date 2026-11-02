@@ -1,8 +1,9 @@
 import { deleteWorkout, getWorkoutSets, saveWorkout } from "@/lib/queries";
 import { WORKOUTS, type WorkoutKey } from "@/lib/workouts";
+import { numIn, validDate } from "@/lib/validate";
 
 const valid = (date: unknown, workout: unknown): workout is WorkoutKey =>
-  typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) && typeof workout === "string" && workout in WORKOUTS;
+  validDate(date) && typeof workout === "string" && workout in WORKOUTS;
 
 export async function GET() {
   return Response.json(getWorkoutSets());
@@ -14,11 +15,11 @@ export async function POST(req: Request) {
   if (!valid(b.date, b.workout)) return Response.json({ error: "date (YYYY-MM-DD) and workout (A/B/C) are required" }, { status: 400 });
   const names = new Set(WORKOUTS[b.workout as WorkoutKey].exercises.map((e) => e.name));
   const sets = (Array.isArray(b.sets) ? b.sets : [])
-    .filter((s: Record<string, unknown>) => names.has(String(s.exercise)) && Number(s.reps) > 0)
+    .filter((s: Record<string, unknown>) => names.has(String(s.exercise)) && numIn(s.reps, 1, 600) !== undefined)
     .map((s: Record<string, unknown>) => ({
       exercise: String(s.exercise),
-      set_no: Number(s.set_no) || 1,
-      weight: s.weight === "" || s.weight == null ? null : Number(s.weight),
+      set_no: Math.round(numIn(s.set_no, 1, 20) ?? 1),
+      weight: numIn(s.weight, 0.5, 500) ?? null,
       reps: Math.round(Number(s.reps)),
     }));
   saveWorkout(b.date, b.workout, sets);

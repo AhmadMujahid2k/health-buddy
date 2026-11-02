@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
 import type { Food } from "@/lib/types";
 import { PageHeader } from "./ui";
+import { failed } from "@/lib/http";
 
 type Form = { id?: number; name: string; aliases: string; unit: string; kcal: number | string; protein: number | string; note: string; source?: string };
 const EMPTY: Form = { name: "", aliases: "", unit: "piece", kcal: "", protein: "", note: "" };
@@ -16,11 +17,14 @@ export function FoodsClient({ foods }: { foods: Food[] }) {
 
   async function save() {
     if (!form) return;
-    await fetch(form.id ? `/api/foods/${form.id}` : "/api/foods", {
-      method: form.id ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const err = await failed(
+      await fetch(form.id ? `/api/foods/${form.id}` : "/api/foods", {
+        method: form.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      }),
+    );
+    if (err) return alert(`Not saved: ${err}`);
     setForm(null);
     router.refresh();
   }

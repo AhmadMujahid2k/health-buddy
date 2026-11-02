@@ -40,14 +40,16 @@ function weekly(p: Profile, stats: DayStats[]) {
   const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : null);
   for (const wk of weeks) {
     const ds = stats.filter((s) => s.date >= wk.start && s.date <= wk.end);
-    const logged = ds.filter((s) => s.logged);
+    // today is still being logged: leave it out of averages and totals until it's over
+    const done = ds.filter((s) => !s.partial);
+    const logged = done.filter((s) => s.logged);
     wk.days = ds.length;
     wk.avgWeight = avg(ds.flatMap((s) => (s.weight != null ? [s.weight] : [])));
     wk.avgIntake = avg(logged.map((s) => s.intake));
     wk.avgProtein = avg(logged.map((s) => s.protein));
     wk.avgSteps = avg(ds.flatMap((s) => (s.steps != null ? [s.steps] : [])));
     wk.km = ds.reduce((a, s) => a + (s.km ?? 0), 0);
-    wk.deficit = ds.reduce((a, s) => a + s.deficit, 0);
+    wk.deficit = done.reduce((a, s) => a + s.deficit, 0);
     wk.onTarget = logged.filter((s) => s.intake <= p.kcal_target).length;
     wk.logged = logged.length;
   }
@@ -73,10 +75,10 @@ async function Dashboard() {
   const kgLeft = m ? Math.max(0, current - m.weight) : null;
   const pace = daysLeft && kgLeft != null ? kgLeft / (daysLeft / 7) : null;
 
-  const recent = stats.filter((s) => s.logged).slice(-7);
+  const recent = stats.filter((s) => s.logged && !s.partial).slice(-7);
   const weeks = weekly(p, stats);
   const avg = (f: (s: DayStats) => number) => (recent.length ? recent.reduce((a, s) => a + f(s), 0) / recent.length : 0);
-  const totalDeficit = stats.at(-1)?.cumDeficit ?? 0;
+  const totalDeficit = todayS.cumDeficit;
 
   const goalTotal = m ? m.fromWeight - m.weight : 0;
   const goalPct = m && goalTotal > 0 ? Math.min(100, Math.max(0, ((m.fromWeight - current) / goalTotal) * 100)) : 0;
@@ -175,7 +177,7 @@ async function Dashboard() {
             </div>
             <div className="mt-5 grid grid-cols-3 gap-3 rounded-xl bg-card-2 p-3 text-center">
               <Stat label="Burned" value={fmt(todayS.totalBurn)} />
-              <Stat label="Deficit" value={todayS.logged ? fmt(todayS.deficit) : "–"} tone={todayS.deficit > 0 ? "good" : undefined} />
+              <Stat label="Deficit so far" value={todayS.logged ? fmt(todayS.deficit) : "–"} tone={todayS.deficit > 0 ? "good" : undefined} />
               <Stat label="Watch kcal counted" value={fmt(todayS.activeCounted)} sub={todayS.activeKcal ? `of ${fmt(todayS.activeKcal)} on watch` : undefined} />
             </div>
           </div>

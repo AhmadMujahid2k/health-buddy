@@ -89,7 +89,8 @@ export function countedActiveKcal(watchKcal: number, steps: number | null, baseS
 
 /**
  * Build per-day stats from the start date to `until`.
- * Days with no food logged get deficit 0, so a half-finished day can't inflate progress.
+ * Days with no food logged get deficit 0. Today is still being logged, so its deficit is shown but kept out of
+ * the running total (`partial`); otherwise breakfast alone would count as a whole day's deficit.
  */
 export function buildStats(
   p: Profile,
@@ -101,6 +102,7 @@ export function buildStats(
   const out: DayStats[] = [];
   let weightUsed = p.start_weight;
   let cum = 0;
+  const now = today();
   const n = daysBetween(p.start_date, until);
   for (let i = 0; i <= n; i++) {
     const date = addDays(p.start_date, i);
@@ -115,7 +117,8 @@ export function buildStats(
     const base = b * p.activity_factor;
     const total = base + counted;
     const deficit = intake > 0 ? total - intake : 0;
-    cum += deficit;
+    const partial = date >= now;
+    if (!partial) cum += deficit;
     out.push({
       date,
       dayNo: i + 1,
@@ -138,6 +141,7 @@ export function buildStats(
       water: row?.water_l ?? null,
       sleep: row?.sleep_h ?? null,
       logged: intake > 0,
+      partial,
     });
   }
   return out;

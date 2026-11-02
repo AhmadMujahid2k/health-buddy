@@ -1,4 +1,4 @@
-import { fmt, KCAL_PER_KG_FAT } from "./calc";
+import { addDays, fmt, goalPathOn, KCAL_PER_KG_FAT } from "./calc";
 import type { DayStats, Profile } from "./types";
 
 // ── Streaks ────────────────────────────────────────────────────────────
@@ -21,7 +21,8 @@ function streak(stats: DayStats[], today: string, ok: (s: DayStats) => boolean, 
   for (const s of stats) {
     if (s.date > today) break;
     if (ready(s) && ok(s)) best = Math.max(best, ++run);
-    else if (s.date !== today || ready(s)) run = 0;
+    // today can extend a streak but not break it: it isn't over yet
+    else if (s.date !== today) run = 0;
   }
   // `run` now ends at today (or yesterday when today isn't judged yet)
   return { current: run, best };
@@ -71,12 +72,12 @@ const shortDate = (iso: string) =>
 export function getInsights(p: Profile, stats: DayStats[], today: string): string[] {
   const out: string[] = [];
   const past = stats.filter((s) => s.date <= today);
-  const logged = past.filter((s) => s.logged);
+  const logged = past.filter((s) => s.logged && !s.partial);
   const weighIns = past.filter((s) => s.weight != null);
   const last = weighIns.at(-1);
   const totalKm = past.reduce((a, s) => a + (s.km ?? 0), 0);
   const totalSteps = past.reduce((a, s) => a + (s.steps ?? 0), 0);
-  const cum = past.at(-1)?.cumDeficit ?? 0;
+  const cum = past.at(-1)?.cumDeficit ?? 0; // excludes today, which is still being logged
   const fatKg = cum / KCAL_PER_KG_FAT;
 
   if (last) {
@@ -88,9 +89,15 @@ export function getInsights(p: Profile, stats: DayStats[], today: string): strin
     );
 
     // when the plan line crosses the next whole kilo below the current weight
-    const nextKg = Math.ceil(last.weight!) - 1;
-    const planDay = stats.find((s) => s.goalPath != null && s.goalPath < nextKg && s.date > today);
-    out.push(`🎯 Next stop: under ${nextKg} kg${planDay ? ` · the plan gets there on ${shortDate(planDay.date)}` : ""}`);
+    const nextKg = Math.floor(last.weight! - 1e-9);
+    let planDay: string | null = null;
+    for (let i = 1; i <= 400; i++) {
+      const d = addDays(today, i);
+      const g = goalPathOn(p, d);
+      if (g == null) break;
+      if (g < nextKg) { planDay = d; break; }
+    }
+    out.push(`🎯 Next stop: under ${nextKg} kg${planDay ? ` · the plan gets there on ${shortDate(planDay)}` : ""}`);
   }
   if (fatKg > 0.1) out.push(`🧈 ${fmt(fatKg, 2)} kg of fat burned, about ${fmt(fatKg, 1)} packs of 1 kg ghee`);
   if (cum > 0) out.push(`🍛 ${fmt(cum)} kcal total deficit, like skipping ${fmt(cum / 600)} plates of biryani`);

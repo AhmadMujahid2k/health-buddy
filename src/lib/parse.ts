@@ -87,9 +87,9 @@ function readQty(words: string[]): { qty: number | null; unit: string | null; si
   let unit: string | null = null;
   let size = 1;
   const joined = words.join(" ");
-  // "1/2"
-  const frac = joined.match(/(\d+)\s*\/\s*(\d+)/);
-  if (frac) qty = Number(frac[1]) / Number(frac[2]);
+  // "1/2", and "1 1/2" = 1.5
+  const frac = joined.match(/(?:(\d+)\s+)?(\d+)\s*\/\s*(\d+)/);
+  if (frac) qty = (frac[1] ? Number(frac[1]) : 0) + Number(frac[2]) / Number(frac[3]);
   for (const w of words) {
     const m = w.match(NUM_RE);
     if (m && qty == null) qty = m[2] ? (Number(m[1]) + Number(m[2])) / 2 : Number(m[1]);
@@ -100,7 +100,7 @@ function readQty(words: string[]): { qty: number | null; unit: string | null; si
     if (BIG.has(w)) size = 1.25;
   }
   // "4-5" written without spaces is one word and handled above; "4 - 5" splits into tokens
-  const range = joined.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+  const range = joined.match(/(\d+(?:\.\d+)?)\s*(?:-|to)\s*(\d+(?:\.\d+)?)/);
   if (range) qty = (Number(range[1]) + Number(range[2])) / 2;
   return { qty, unit, size };
 }

@@ -44,16 +44,29 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 - **Charts and weekly summary.** Weight vs plan, calories in vs out, protein, steps and distance. The weekly table
   groups *daily averages* and *week totals* and shows the change from the week before.
 
+### Real burn, events and strength
+- **Your real burn.** Compares what you ate with how your smoothed weight actually moved over the last 3 weeks and
+  works out what you really burn per day, next to the formula's guess. If the formula is off, it tells you by how much
+  and what to change. It needs most days logged and gets steadier every week.
+- **Events.** Add dawats, weddings, dinners out, birthdays and anniversaries (yearly ones repeat). Each shows your
+  forecast weight on the day, when you'll reach an optional weight goal, a plan to save up the extra calories over the
+  days before, and plate tips for that kind of meal. The next one shows on the dashboard.
+- **Strength.** Log three full-body home workouts (A → B → C) set by set. Each exercise shows what you did last time and
+  what to aim for next: add reps until every set hits the top of the range, then move up a weight, based on the
+  dumbbells and plates you actually have. A progress table tracks each lift's estimated one-rep max.
+
 ### History
 - One row per day with weight change (▼ / ▲), steps and km, protein, calories eaten and the day's deficit with its
   fat equivalent.
-- Colour-coded: **green** within target, **grey** over target but still a deficit, **red** if you ate more than you
-  burned.
+- Colour-coded: **green** within target, **amber** under your minimum, **grey** over target but still a deficit,
+  **red** if you ate more than you burned. Today is marked *in progress* and isn't counted in totals until it's over.
 
 ### Look and feel
 - **Five colour palettes** (Ocean Blue, Navy & Cream, Electric Indigo, Crimson Black, Sky & Mint), each with a light
   and a dark version, plus Light / Dark / Auto. Pick them in the sidebar.
 - Chart colours for every palette are checked to be colour-blind safe. Status colours stay the same in all of them.
+- **Choose your dashboard.** Switch any section off in Settings (insights, cards, charts, streaks, journey…) and the
+  rest closes the gap.
 - Works on a phone-sized screen, and animations turn off when your system asks for reduced motion.
 
 ### Honest maths
@@ -88,7 +101,8 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
                               editable preview ──▶ SQLite   (data/health.db)
 ```
 
-Dashboard extras (streaks, insights, journey route) live in `src/lib/insights.ts`. Palettes are CSS variables in
+Dashboard extras (streaks, insights, journey route) live in `src/lib/insights.ts`, real burn in `src/lib/tdee.ts`,
+event planning in `src/lib/events.ts` and the workouts and progression rules in `src/lib/workouts.ts`. Palettes are CSS variables in
 `src/app/globals.css`, switched with `<html data-palette>`.
 
 ## Getting started
@@ -100,7 +114,7 @@ for whisper.cpp.
 git clone https://github.com/<you>/health-buddy.git
 cd health-buddy
 npm install
-npm run build && npm start          # http://localhost:4782
+npm run build && npm start          # http://127.0.0.1:4782
 ```
 
 Open **Settings** first and enter your height, weight, targets, step length, eating window and (optionally) your
@@ -160,7 +174,7 @@ systemctl --user enable --now health-buddy
 
 | Command | What it does |
 |---|---|
-| `npm run dev` | Dev server with hot reload (http://localhost:4782) |
+| `npm run dev` | Dev server with hot reload (http://127.0.0.1:4782) |
 | `npm run build` / `npm start` | Production build / server |
 | `npm run typecheck` | TypeScript check |
 | `npm run demo` | Build a demo database with a made-up user, then `HEALTH_DB=data/demo.db npm start` |
@@ -169,9 +183,12 @@ systemctl --user enable --now health-buddy
 
 ## Privacy
 
-- Your data lives in `data/health.db` on your machine. `data/` is git-ignored, so back it up yourself.
-- Voice is transcribed locally. The only thing that leaves your machine is the text of a food line the table doesn't
-  know, sent to Claude through your own CLI login.
+- Your data lives in `data/health.db` on your machine (or wherever `HEALTH_DB` points). `data/` is git-ignored, so
+  back it up yourself.
+- Voice is transcribed locally. The only things that leave your machine are the food lines the table doesn't know and
+  your "About your food" note, sent to Claude through your own CLI login.
+- The API refuses writes from other websites (checked by Origin in `src/proxy.ts`), so a page open in your browser
+  can't add entries or run Claude on your account. Scripts and `curl` on your machine still work.
 - Palette and theme choices are kept in your browser's local storage.
 - The server binds to `127.0.0.1` by default. To use it from a phone on your Wi-Fi, bind to `0.0.0.0` and set
   `allowedDevOrigins` in `next.config.ts`, and note that browsers block the microphone on plain `http`.

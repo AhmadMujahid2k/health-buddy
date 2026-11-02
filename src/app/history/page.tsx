@@ -14,10 +14,14 @@ export default function HistoryPage() {
   );
 }
 
-/** green = within target, grey = over target but still a deficit, red = ate more than burned */
-function intakeTone(s: DayStats, target: number) {
-  if (!s.logged) return "text-muted";
+/**
+ * green = within target, amber = under the minimum, grey = over target but still a deficit,
+ * red = ate more than burned. Today stays neutral until it's over.
+ */
+function intakeTone(s: DayStats, target: number, floor: number) {
+  if (!s.logged || s.partial) return "text-muted";
   if (s.deficit < 0) return "text-bad";
+  if (s.intake < floor) return "text-warn";
   if (s.intake <= target) return "text-good";
   return "text-muted";
 }
@@ -43,6 +47,7 @@ async function History() {
       <PageHeader title="History" subtitle="Every day since you started · tap a day to view or edit it" />
       <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
         <span><span className="font-semibold text-good">Green</span> within {fmt(p.kcal_target)} kcal</span>
+        <span><span className="font-semibold text-warn">Amber</span> under the {fmt(p.kcal_floor)} kcal minimum</span>
         <span><span className="font-semibold">Grey</span> over target, still a deficit</span>
         <span><span className="font-semibold text-bad">Red</span> ate more than you burned</span>
       </div>
@@ -105,11 +110,14 @@ async function History() {
                 </div>
 
                 <div className="mt-2 flex items-baseline justify-between md:contents">
-                  <div className={`font-bold md:text-right ${intakeTone(s, p.kcal_target)}`}>
+                  <div className={`font-bold md:text-right ${intakeTone(s, p.kcal_target, p.kcal_floor)}`}>
                     {s.logged ? `${fmt(s.intake)} kcal` : "not logged"}
+                    {s.partial && s.logged && <div className="text-xs font-normal">so far today</div>}
                   </div>
                   <div className="text-right">
-                    {s.logged ? (
+                    {s.logged && s.partial ? (
+                      <span className="text-xs text-muted">in progress</span>
+                    ) : s.logged ? (
                       <>
                         <div className={`font-bold ${s.deficit < 0 ? "text-bad" : ""}`}>
                           {s.deficit < 0 ? `+${fmt(-s.deficit)} surplus` : `${fmt(s.deficit)} kcal`}

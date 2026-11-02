@@ -1,4 +1,5 @@
 import { getEntries, getStats } from "@/lib/queries";
+import { today } from "@/lib/calc";
 
 export async function GET() {
   const { stats } = getStats();
@@ -7,8 +8,10 @@ export async function GET() {
     "bmr", "base_burn", "total_burn", "deficit", "cum_deficit", "est_fat_kg", "goal_path_kg", "water_l", "sleep_h", "foods",
   ];
   const esc = (v: unknown) => {
-    const s = v == null ? "" : String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    let s = v == null ? "" : String(v);
+    // text starting with = + - @ would run as a formula in Excel/Sheets
+    if (/^[=+\-@]/.test(s) && !/^-?\d/.test(s)) s = `'${s}`;
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   const r = (n: number) => Math.round(n);
   const lines = [head.join(",")];
@@ -27,7 +30,7 @@ export async function GET() {
   return new Response(lines.join("\n"), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="health-buddy-${new Date().toISOString().slice(0, 10)}.csv"`,
+      "Content-Disposition": `attachment; filename="health-buddy-${today()}.csv"`,
     },
   });
 }

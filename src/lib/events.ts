@@ -1,4 +1,5 @@
 import { addDays, daysBetween, KCAL_PER_KG_FAT } from "./calc";
+import { trendWeights } from "./tdee";
 import type { DayStats, EventKind, EventRow } from "./types";
 
 export const KINDS: { key: EventKind; label: string; emoji: string }[] = [
@@ -39,26 +40,27 @@ export const PLATE_PLAN: Partial<Record<EventKind, string[]>> = {
 /** The next date this event happens on or after `t` (yearly events roll to next year once passed). */
 export function nextDate(e: EventRow, t: string): string {
   if (!e.yearly) return e.date;
-  const md = e.date.slice(5);
+  const leap = (y: number) => (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const on = (y: number) => `${y}-${e.date.slice(5) === "02-29" && !leap(y) ? "02-28" : e.date.slice(5)}`;
   const year = Number(t.slice(0, 4));
-  const thisYear = `${year}-${md}`;
-  return thisYear >= t ? thisYear : `${year + 1}-${md}`;
+  return on(year) >= t ? on(year) : on(year + 1);
 }
 
-/** kg per day from a least-squares fit of the last 14 days of weigh-ins; falls back to the logged deficit. */
-export function weightPace(stats: DayStats[], t: string): { kgPerDay: number; from: "scale" | "deficit" } | null {
-  const pts = stats.filter((s) => s.weight != null && s.date <= t && daysBetween(s.date, t) < 14);
-  if (pts.length >= 5) {
-    const xs = pts.map((s) => daysBetween(pts[0].date, s.date));
-    const ys = pts.map((s) => s.weight!);
-    const mx = xs.reduce((a, b) => a + b, 0) / xs.length;
-    const my = ys.reduce((a, b) => a + b, 0) / ys.length;
-    const den = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
-    if (den > 0) return { kgPerDay: xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / den, from: "scale" };
-  }
-  const recent = stats.filter((s) => s.logged && s.date <= t).slice(-7);
+/**
+ * kg per day from the smoothed (trend) weight over the last 3 weeks, the same trend the real-burn card uses,
+ * so one salty dinner or a fever's water loss doesn't swing the forecast. Falls back to the logged deficit.
+ */
+export function weightPace(stats: DayStats[], t: string): { kgPerDay: number; from: "trend" | "deficit" } | null {
+  const past = stats.filter((s) => s.date < t);
+  const trend = trendWeights(past);
+  const end = past.at(-1)?.date;
+  const n = end ? Math.min(21, daysBetween(past[0].date, end)) : 0;
+  const a = end ? trend.get(addDays(end, -n)) : undefined;
+  const b = end ? trend.get(end) : undefined;
+  if (n >= 14 && a != null && b != null) return { kgPerDay: (b - a) / n, from: "trend" };
+  const recent = past.filter((s) => s.logged).slice(-7);
   if (!recent.length) return null;
-  return { kgPerDay: -recent.reduce((a, s) => a + s.deficit, 0) / recent.length / KCAL_PER_KG_FAT, from: "deficit" };
+  return { kgPerDay: -recent.reduce((acc, s) => acc + s.deficit, 0) / recent.length / KCAL_PER_KG_FAT, from: "deficit" };
 }
 
 export type EventPlan = {
@@ -77,7 +79,7 @@ export type EventPlan = {
 
 export function planEvents(events: EventRow[], stats: DayStats[], t: string, current: number): EventPlan[] {
   const pace = weightPace(stats, t);
-  const recent = stats.filter((s) => s.logged && s.date <= t).slice(-7);
+  const recent = stats.filter((s) => s.logged && !s.partial && s.date <= t).slice(-7);
   const avgDeficit = recent.length ? recent.reduce((a, s) => a + s.deficit, 0) / recent.length : null;
 
   return events

@@ -5,6 +5,8 @@ import { Dumbbell, Minus, Plus, Trash2, TrendingUp } from "lucide-react";
 import type { WorkoutSet } from "@/lib/queries";
 import { e1rm, nextWorkout, setsFor, suggest, WORKOUT_KEYS, WORKOUTS, type Exercise, type SetRow, type WorkoutKey } from "@/lib/workouts";
 import { PageHeader } from "./ui";
+import { failed } from "@/lib/http";
+import { addDays } from "@/lib/calc";
 
 type Row = { weight: string; reps: string };
 type Form = { date: string; workout: WorkoutKey; rows: Record<string, Row[]> };
@@ -57,11 +59,7 @@ export function StrengthClient({ sets, today }: { sets: WorkoutSet[]; today: str
   );
   const [saved, setSaved] = useState(false);
 
-  const monday = (() => {
-    const d = new Date(today + "T12:00:00");
-    d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-    return d.toISOString().slice(0, 10);
-  })();
+  const monday = addDays(today, -((new Date(today + "T12:00:00Z").getUTCDay() + 6) % 7));
   const thisWeek = sessions.filter((s) => s.date >= monday && s.date <= today).length;
   const loggedNow = sessions.some((s) => s.date === form.date && s.workout === form.workout);
 
@@ -77,7 +75,10 @@ export function StrengthClient({ sets, today }: { sets: WorkoutSet[]; today: str
         rows.filter((r) => Number(r.reps) > 0).map((r, i) => ({ exercise, set_no: i + 1, weight: r.weight, reps: r.reps })),
       ),
     };
-    await fetch("/api/workouts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const err = await failed(
+      await fetch("/api/workouts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+    );
+    if (err) return alert(`Not saved: ${err}`);
     setSaved(true);
     router.refresh();
   }
@@ -85,6 +86,9 @@ export function StrengthClient({ sets, today }: { sets: WorkoutSet[]; today: str
   async function remove(date: string, workout: WorkoutKey) {
     if (!confirm(`Delete Workout ${workout} on ${fmtDate(date)}?`)) return;
     await fetch(`/api/workouts?date=${date}&workout=${workout}`, { method: "DELETE" });
+    // the form may hold the deleted session; start it fresh so Save doesn't bring it back
+    const rest = sets.filter((s) => !(s.date === date && s.workout === workout));
+    if (form.date === date && form.workout === workout) setForm(buildForm(rest, date, workout));
     router.refresh();
   }
 

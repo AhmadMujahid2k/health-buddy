@@ -67,6 +67,7 @@ export interface ClaudeItem extends DraftItem {
 }
 
 export async function estimateWithClaude(lines: string[], model = "sonnet", userContext?: string | null): Promise<ClaudeItem[]> {
+  if (!["sonnet", "haiku", "opus"].includes(model)) model = "sonnet";
   const bin = claudeBin();
   if (!bin) throw new Error("Claude CLI not found. Install it with: curl -fsSL https://claude.ai/install.sh | bash");
   const about = userContext?.trim() ? `\nAbout this user's food:\n${userContext.trim()}\n` : "";
@@ -89,6 +90,7 @@ export async function estimateWithClaude(lines: string[], model = "sonnet", user
   const res = JSON.parse(stdout);
   if (res.is_error) throw new Error(`Claude error: ${res.result ?? "unknown"}`);
   const data = res.structured_output ?? JSON.parse(res.result);
+  if (!Array.isArray(data?.items)) throw new Error("Claude returned no food items; try again or enter the food by hand");
   return (data.items as Array<Record<string, unknown>>).map((it) => {
     const qty = Number(it.qty) || 1;
     const kpu = Number(it.kcal_per_unit) || 0;
