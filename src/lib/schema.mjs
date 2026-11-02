@@ -97,6 +97,19 @@ CREATE TABLE IF NOT EXISTS events (
   notes TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Strength sessions: one row per set (see src/lib/workouts.ts for the exercises)
+CREATE TABLE IF NOT EXISTS workout_sets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  date TEXT NOT NULL,
+  workout TEXT NOT NULL,            -- A | B | C
+  exercise TEXT NOT NULL,
+  set_no INTEGER NOT NULL,
+  weight REAL,                      -- kg as entered (per hand for dumbbells); null = bodyweight
+  reps INTEGER NOT NULL,            -- or seconds for holds
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS workout_sets_date ON workout_sets(date);
 `;
 
 // Placeholder profile for a fresh install — change it on the Settings page.

@@ -169,3 +169,23 @@ export function upsertEvent(e: Omit<EventRow, "id"> & { id?: number }): number {
 export function deleteEvent(id: number) {
   db().prepare("DELETE FROM events WHERE id = ?").run(id);
 }
+
+export type WorkoutSet = { id: number; date: string; workout: string; exercise: string; set_no: number; weight: number | null; reps: number };
+
+export function getWorkoutSets(): WorkoutSet[] {
+  return db().prepare("SELECT id, date, workout, exercise, set_no, weight, reps FROM workout_sets ORDER BY date, workout, id").all() as WorkoutSet[];
+}
+
+/** Replaces the sets of one session (date + workout). */
+export function saveWorkout(date: string, workout: string, sets: Omit<WorkoutSet, "id" | "date" | "workout">[]) {
+  const conn = db();
+  const ins = conn.prepare("INSERT INTO workout_sets (date, workout, exercise, set_no, weight, reps) VALUES (?, ?, ?, ?, ?, ?)");
+  conn.transaction(() => {
+    conn.prepare("DELETE FROM workout_sets WHERE date = ? AND workout = ?").run(date, workout);
+    for (const s of sets) ins.run(date, workout, s.exercise, s.set_no, s.weight, s.reps);
+  })();
+}
+
+export function deleteWorkout(date: string, workout: string) {
+  db().prepare("DELETE FROM workout_sets WHERE date = ? AND workout = ?").run(date, workout);
+}
