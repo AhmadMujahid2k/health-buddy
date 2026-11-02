@@ -18,9 +18,14 @@ const NUMERIC: Record<string, [number, number, boolean]> = {
   stride_m: [0.3, 1.5, false],
   milestone_weight: [30, 300, true],
   next_milestone_weight: [30, 300, true],
+  latitude: [-66, 66, false],
+  longitude: [-180, 180, false],
+  utc_offset: [-12, 14, false],
 };
 const INTEGER = new Set(["kcal_target", "kcal_floor", "protein_target", "step_target", "base_steps"]);
-const DATES: Record<string, boolean> = { dob: false, start_date: false, milestone_date: true, next_milestone_date: true }; // nullable?
+const DATES: Record<string, boolean> = { // value: may it be empty?
+  dob: false, start_date: false, milestone_date: true, next_milestone_date: true, ramadan_start: true, ramadan_end: true,
+};
 const TIMES = new Set(["eat_start", "eat_end"]);
 const TEXT = new Set(["name", "milestone_label", "next_milestone_label", "food_context", "hidden_sections"]);
 const CHOICES: Record<string, string[]> = { sex: ["male", "female"], claude_model: ["sonnet", "haiku", "opus"], voice_language: ["en", "auto"] };

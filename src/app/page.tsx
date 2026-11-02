@@ -13,9 +13,11 @@ import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
 import { hiddenSections } from "@/lib/sections";
 import { kindOf, planEvents } from "@/lib/events";
 import { realBurn } from "@/lib/tdee";
+import { fastDay, ramadanPhase, ramadanWeights } from "@/lib/ramadan";
+import { clock, hhmm } from "@/lib/prayer";
 import { RealBurnCard } from "@/components/RealBurnCard";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
-import { Activity, AlertTriangle, CalendarHeart, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
+import { Activity, AlertTriangle, CalendarHeart, Moon, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
 
 export default function Home() {
   return (
@@ -91,6 +93,10 @@ async function Dashboard() {
   const showMilestone = show("milestone") && m != null;
   const showStreaks = show("streaks");
   const showJourney = show("journey");
+  // Ramadan: on fasting days the eating window is iftar → sehri
+  const rPhase = ramadanPhase(p, t);
+  const fast = rPhase?.kind === "fasting" ? fastDay(p, t, rPhase.day) : null;
+  const rWeights = rPhase?.kind === "guard" ? ramadanWeights(p, stats, t) : null;
   // the next event in the coming month, or one whose save-up days have started
   const nextEvent = show("events")
     ? planEvents(getEvents(), stats, t, current).find((e) => e.daysLeft >= 0 && (e.daysLeft <= 30 || e.bank?.today))
@@ -111,6 +117,27 @@ async function Dashboard() {
 
       <div className="space-y-5">
         {show("insights") && <InsightsTicker items={getInsights(p, stats, t)} />}
+
+        {rPhase && show("ramadan") && (
+          <Link href="/ramadan" className="card flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-sm transition hover:border-brand">
+            <span className="flex items-center gap-2 font-semibold">
+              <Moon size={16} className="text-brand" />
+              {rPhase.kind === "upcoming" && `Ramadan starts in ${rPhase.daysUntil} day${rPhase.daysUntil === 1 ? "" : "s"}`}
+              {rPhase.kind === "fasting" && `Ramadan · day ${rPhase.day} of ${rPhase.of}`}
+              {rPhase.kind === "guard" && `Post-Eid guard · day ${rPhase.daysSinceEid} of 28`}
+            </span>
+            {fast && (
+              <span className="text-muted">
+                Sehri ends {clock(fast.sehriEnds)} · Iftar {clock(fast.iftar)} · {Math.floor(fast.fastMin / 60)}h {fast.fastMin % 60}m fast
+              </span>
+            )}
+            {rWeights?.eid != null && rWeights.now != null && (
+              <span className={rWeights.now - rWeights.eid > 0.5 ? "text-bad" : "text-good"}>
+                {rWeights.now - rWeights.eid > 0 ? "+" : "−"}{fmt(Math.abs(rWeights.now - rWeights.eid), 1)} kg since Eid
+              </span>
+            )}
+          </Link>
+        )}
 
         {nextEvent && (
           <Link href="/events" className="card flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-sm transition hover:border-brand">
@@ -162,8 +189,8 @@ async function Dashboard() {
                   baseBurn={todayS.baseBurn}
                   activeCounted={todayS.activeCounted}
                   intake={todayS.intake}
-                  eatStart={p.eat_start}
-                  eatEnd={p.eat_end}
+                  eatStart={fast ? hhmm(fast.iftar) : p.eat_start}
+                  eatEnd={fast ? hhmm(fast.sehriEnds) : p.eat_end}
                 />
               </div>
             )}

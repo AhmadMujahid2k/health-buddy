@@ -2,6 +2,7 @@
 export const SECTIONS = [
   { key: "insights", label: "Insights strip" },
   { key: "events", label: "Next event" },
+  { key: "ramadan", label: "Ramadan strip" },
   { key: "kpis", label: "Summary cards" },
   { key: "today", label: "Today" },
   { key: "milestone", label: "Milestone goal" },

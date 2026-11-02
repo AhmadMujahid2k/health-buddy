@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, CalendarHeart, Dumbbell, LayoutDashboard, Menu, PlusCircle, Settings, UtensilsCrossed, X } from "lucide-react";
+import { CalendarDays, CalendarHeart, Dumbbell, LayoutDashboard, Moon, Menu, PlusCircle, Settings, UtensilsCrossed, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { PalettePicker, ThemeToggle } from "./ThemeToggle";
 
@@ -12,6 +12,7 @@ const NAV = [
   { href: "/history", label: "History", icon: CalendarDays },
   { href: "/strength", label: "Strength", icon: Dumbbell },
   { href: "/events", label: "Events", icon: CalendarHeart },
+  { href: "/ramadan", label: "Ramadan", icon: Moon },
   { href: "/foods", label: "Food library", icon: UtensilsCrossed },
   { href: "/settings", label: "Settings", icon: Settings },
 ];

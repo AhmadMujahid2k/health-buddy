@@ -30,6 +30,11 @@ const FIELDS: { key: keyof Profile; label: string; type?: string; step?: string 
   { key: "next_milestone_label", label: "Next milestone name", type: "text" },
   { key: "next_milestone_weight", label: "Next milestone weight (kg)", step: "0.5" },
   { key: "next_milestone_date", label: "Next milestone date", type: "date" },
+  { key: "ramadan_start", label: "Ramadan: first fast", type: "date" },
+  { key: "ramadan_end", label: "Ramadan: last fast", type: "date" },
+  { key: "latitude", label: "Latitude (for sehri/iftar times)", step: "0.0001" },
+  { key: "longitude", label: "Longitude", step: "0.0001" },
+  { key: "utc_offset", label: "Time zone (hours from UTC)", step: "0.5" },
 ];
 
 export function SettingsClient({ profile, startBmr }: { profile: Profile; startBmr: number }) {

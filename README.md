@@ -86,6 +86,18 @@ Three full-body home workouts (A → B → C, any 3 days a week), logged set by 
 
 ![Strength](docs/screenshots/strength.png)
 
+### Ramadan
+A month of fasting changes everything about the day, so it gets its own mode.
+
+- **Sehri and iftar times** for every fast, worked out on your machine from your location (Fajr and Isha at 18°,
+  Karachi method; default Lahore, set yours in Settings). No internet or prayer-times service needed.
+- **On fasting days the eating-window clock switches to iftar → sehri** and the dashboard shows the day's times.
+- **A calorie split** for iftar (40%), after Taraweeh (15%) and sehri (45%), with protein per meal and tips:
+  dates and water first, eggs and yogurt at sehri, walk after Taraweeh, 8 glasses between iftar and sehri.
+- **Post-Eid guard:** most Ramadan weight loss comes back within a few weeks, so for 28 days after Eid the dashboard
+  compares your weight with your Eid weight.
+- Set the first and last fast in Settings once the moon is sighted.
+
 ### History
 - One row per day with weight change (▼ / ▲), steps and km, protein, calories eaten and the day's deficit with its
   fat equivalent.
@@ -131,7 +143,8 @@ Three full-body home workouts (A → B → C, any 3 days a week), logged set by 
 ```
 
 Dashboard extras (streaks, insights, journey route) live in `src/lib/insights.ts`, real burn in `src/lib/tdee.ts`,
-event planning in `src/lib/events.ts` and the workouts and progression rules in `src/lib/workouts.ts`. Palettes are CSS variables in
+event planning in `src/lib/events.ts`, the workouts and progression rules in `src/lib/workouts.ts`, and prayer times
+and Ramadan mode in `src/lib/prayer.ts` and `src/lib/ramadan.ts`. Palettes are CSS variables in
 `src/app/globals.css`, switched with `<html data-palette>`.
 
 ## Logging from scripts (or an AI coach)

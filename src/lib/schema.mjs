@@ -30,7 +30,12 @@ CREATE TABLE IF NOT EXISTS profile (
   eat_start TEXT,                  -- "HH:MM" eating window, for the dashboard clock
   eat_end TEXT,
   food_context TEXT,
-  hidden_sections TEXT             -- comma-separated dashboard sections switched off in Settings
+  hidden_sections TEXT,            -- comma-separated dashboard sections switched off in Settings
+  ramadan_start TEXT,              -- first fast (YYYY-MM-DD), set once the moon is sighted
+  ramadan_end TEXT,                -- last fast
+  latitude REAL NOT NULL DEFAULT 31.5204,  -- for sehri/iftar times (default: Lahore)
+  longitude REAL NOT NULL DEFAULT 74.3587,
+  utc_offset REAL NOT NULL DEFAULT 5
 );
 
 -- One row per day: body + activity numbers (food lives in entries)
@@ -141,6 +146,11 @@ export const PROFILE_SEED = {
   eat_end: null,
   food_context: null,
   hidden_sections: null,
+  ramadan_start: null,
+  ramadan_end: null,
+  latitude: 31.5204,
+  longitude: 74.3587,
+  utc_offset: 5,
 };
 
 // [name, aliases, unit, kcal, protein, note]
@@ -231,6 +241,9 @@ export function migrate(db) {
   if (!dayCols.includes("distance_km")) db.exec("ALTER TABLE days ADD COLUMN distance_km REAL");
   if (!cols.includes("food_context")) db.exec("ALTER TABLE profile ADD COLUMN food_context TEXT");
   if (!cols.includes("hidden_sections")) db.exec("ALTER TABLE profile ADD COLUMN hidden_sections TEXT");
+  for (const c of ["ramadan_start", "ramadan_end"]) if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} TEXT`);
+  for (const [c, v] of [["latitude", 31.5204], ["longitude", 74.3587], ["utc_offset", 5]])
+    if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} REAL NOT NULL DEFAULT ${v}`);
   for (const [c, t] of [["next_milestone_weight", "REAL"], ["next_milestone_date", "TEXT"], ["next_milestone_label", "TEXT"]]) {
     if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} ${t}`);
   }

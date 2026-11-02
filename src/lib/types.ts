@@ -35,6 +35,13 @@ export interface Profile {
   food_context: string | null;
   /** comma-separated dashboard section keys that are switched off (see lib/sections.ts) */
   hidden_sections: string | null;
+  /** first and last fast; null until set */
+  ramadan_start: string | null;
+  ramadan_end: string | null;
+  /** location for sehri/iftar times; defaults to Lahore */
+  latitude: number;
+  longitude: number;
+  utc_offset: number;
 }
 
 export interface DayRow {
