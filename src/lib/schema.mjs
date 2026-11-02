@@ -83,6 +83,20 @@ CREATE TABLE IF NOT EXISTS foods (
   uses INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Dates to plan for: dawats, birthdays, anniversaries, dinners out
+CREATE TABLE IF NOT EXISTS events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  date TEXT NOT NULL,               -- YYYY-MM-DD; for yearly events only the month and day matter
+  kind TEXT NOT NULL DEFAULT 'other', -- dawat | wedding | restaurant | birthday | anniversary | other
+  yearly INTEGER NOT NULL DEFAULT 0,
+  target_weight REAL,               -- optional weight to reach by this date
+  extra_kcal INTEGER,               -- expected kcal over the daily target on the day, saved up beforehand
+  bank_days INTEGER NOT NULL DEFAULT 3, -- how many days before to save it over
+  notes TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `;
 
 // Placeholder profile for a fresh install — change it on the Settings page.

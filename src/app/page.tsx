@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
-import { getStats } from "@/lib/queries";
+import { getEvents, getStats } from "@/lib/queries";
 import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, fmtKm, goalStatus, nextMilestone, today } from "@/lib/calc";
 import type { DayStats, Profile } from "@/lib/types";
 import { Charts } from "@/components/Charts";
@@ -11,8 +11,9 @@ import { LiveBurn } from "@/components/LiveBurn";
 import { Streaks } from "@/components/Streaks";
 import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
 import { hiddenSections } from "@/lib/sections";
+import { kindOf, planEvents } from "@/lib/events";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
-import { Activity, AlertTriangle, CheckCircle2, Download, Flame, Plus, Scale, TrendingDown } from "lucide-react";
+import { Activity, AlertTriangle, CalendarHeart, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
 
 export default function Home() {
   return (
@@ -86,6 +87,10 @@ async function Dashboard() {
   const showMilestone = show("milestone") && m != null;
   const showStreaks = show("streaks");
   const showJourney = show("journey");
+  // the next event in the coming month, or one whose save-up days have started
+  const nextEvent = show("events")
+    ? planEvents(getEvents(), stats, t, current).find((e) => e.daysLeft >= 0 && (e.daysLeft <= 30 || e.bank?.today))
+    : undefined;
 
   return (
     <>
@@ -102,6 +107,31 @@ async function Dashboard() {
 
       <div className="space-y-5">
         {show("insights") && <InsightsTicker items={getInsights(p, stats, t)} />}
+
+        {nextEvent && (
+          <Link href="/events" className="card flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-sm transition hover:border-brand">
+            <span className="flex items-center gap-2 font-semibold">
+              <CalendarHeart size={16} className="text-brand" />
+              {kindOf(nextEvent.event.kind).emoji} {nextEvent.event.name}
+              <span className="font-normal text-muted">
+                · {nextEvent.daysLeft === 0 ? "today" : nextEvent.daysLeft === 1 ? "tomorrow" : `in ${nextEvent.daysLeft} days`}
+              </span>
+            </span>
+            {nextEvent.forecast != null && <span className="text-muted">~{fmt(nextEvent.forecast, 1)} kg on the day</span>}
+            {nextEvent.event.target_weight != null && nextEvent.kcalGap != null && current > nextEvent.event.target_weight && (
+              <span className={nextEvent.kcalGap > 0 ? "text-bad" : "text-good"}>
+                {nextEvent.kcalGap > 0
+                  ? `${fmt(Math.ceil(nextEvent.kcalGap / 10) * 10)} kcal/day short of ${fmt(nextEvent.event.target_weight, 1)} kg`
+                  : `on time for ${fmt(nextEvent.event.target_weight, 1)} kg`}
+              </span>
+            )}
+            {nextEvent.bank?.today && (
+              <span className="flex items-center gap-1.5 text-brand">
+                <PiggyBank size={14} /> save ~{fmt(nextEvent.bank.perDay)} kcal today
+              </span>
+            )}
+          </Link>
+        )}
 
         {/* KPIs */}
         {show("kpis") && (

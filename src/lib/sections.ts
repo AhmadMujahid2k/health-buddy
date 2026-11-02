@@ -1,6 +1,7 @@
 /** Dashboard sections that can be switched off in Settings. Hidden keys are stored comma-separated in profile.hidden_sections. */
 export const SECTIONS = [
   { key: "insights", label: "Insights strip" },
+  { key: "events", label: "Next event" },
   { key: "kpis", label: "Summary cards" },
   { key: "today", label: "Today" },
   { key: "milestone", label: "Milestone goal" },

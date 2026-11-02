@@ -60,6 +60,20 @@ export interface Food {
   uses: number;
 }
 
+export type EventKind = "dawat" | "wedding" | "restaurant" | "birthday" | "anniversary" | "other";
+
+export interface EventRow {
+  id: number;
+  name: string;
+  date: string;
+  kind: EventKind;
+  yearly: 0 | 1;
+  target_weight: number | null;
+  extra_kcal: number | null;
+  bank_days: number;
+  notes: string | null;
+}
+
 /** A parsed line shown in the preview before saving. Totals already include qty. */
 export interface DraftItem {
   name: string;

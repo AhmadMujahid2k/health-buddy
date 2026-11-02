@@ -1,7 +1,7 @@
 import "server-only";
 import { db } from "./db";
 import { buildStats, today } from "./calc";
-import type { DayRow, DraftItem, Entry, EntryItem, Food, Meal, Profile } from "./types";
+import type { DayRow, DraftItem, Entry, EntryItem, EventRow, Food, Meal, Profile } from "./types";
 
 export function getProfile(): Profile {
   return db().prepare("SELECT * FROM profile WHERE id = 1").get() as Profile;
@@ -146,4 +146,26 @@ export function findFoodByAlias(term: string): Food | null {
 
 export function deleteFood(id: number) {
   db().prepare("DELETE FROM foods WHERE id = ?").run(id);
+}
+
+export function getEvents(): EventRow[] {
+  return db().prepare("SELECT * FROM events ORDER BY date").all() as EventRow[];
+}
+
+export function upsertEvent(e: Omit<EventRow, "id"> & { id?: number }): number {
+  const conn = db();
+  const cols = "name=@name, date=@date, kind=@kind, yearly=@yearly, target_weight=@target_weight, extra_kcal=@extra_kcal, bank_days=@bank_days, notes=@notes";
+  if (e.id) {
+    conn.prepare(`UPDATE events SET ${cols} WHERE id=@id`).run(e);
+    return e.id;
+  }
+  return Number(
+    conn
+      .prepare("INSERT INTO events (name, date, kind, yearly, target_weight, extra_kcal, bank_days, notes) VALUES (@name, @date, @kind, @yearly, @target_weight, @extra_kcal, @bank_days, @notes)")
+      .run(e).lastInsertRowid,
+  );
+}
+
+export function deleteEvent(id: number) {
+  db().prepare("DELETE FROM events WHERE id = ?").run(id);
 }
