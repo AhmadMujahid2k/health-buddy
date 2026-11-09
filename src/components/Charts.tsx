@@ -106,10 +106,9 @@ export function Charts({
   ].filter((c) => !hidden.includes(c.key));
   if (!panels.length) return null;
   return (
-    <div className="grid min-w-0 gap-5 lg:grid-cols-2">
-      {panels.map((c, i) => (
-        // an odd one out at the end takes the full row
-        <div key={c.key} className={`min-w-0 ${i === panels.length - 1 && panels.length % 2 ? "lg:col-span-2" : ""}`}>
+    <div className="grid min-w-0 gap-5">
+      {panels.map((c) => (
+        <div key={c.key} className="min-w-0">
           {c.panel}
         </div>
       ))}
