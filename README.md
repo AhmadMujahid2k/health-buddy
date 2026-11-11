@@ -274,3 +274,7 @@ lucide-react · whisper.cpp · Claude Code CLI.
 
 Calorie numbers are estimates. This is a personal tracking tool, not medical advice. Talk to a doctor before big
 changes to your diet or exercise.
+
+## License
+
+[MIT](LICENSE) © 2026 Ahmad Mujahid
