@@ -1,0 +1,119 @@
+import Link from "next/link";
+import { fmt, fmtKm, KCAL_PER_KG_FAT } from "@/lib/calc";
+import type { DayStats, Profile } from "@/lib/types";
+
+/**
+ * green = within target, amber = under the minimum, grey = over target but still a deficit,
+ * red = ate more than burned. Today stays neutral until it's over.
+ */
+function intakeTone(s: DayStats, target: number, floor: number) {
+  if (!s.logged || s.partial) return "text-muted";
+  if (s.deficit < 0) return "text-bad";
+  if (s.intake < floor) return "text-warn";
+  if (s.intake <= target) return "text-good";
+  return "text-muted";
+}
+
+const COLS = "md:grid md:grid-cols-[1.3fr_1fr_1.3fr_0.8fr_1fr_1.2fr] md:items-center md:gap-4";
+
+/** One row per day, newest first; each row opens that day in Log food. `limit` shows only the latest days. */
+export function DayList({ profile: p, stats, limit }: { profile: Profile; stats: DayStats[]; limit?: number }) {
+  // weight change vs the previous weigh-in
+  const change = new Map<string, number>();
+  let prev: number | null = null;
+  for (const s of stats) {
+    if (s.weight == null) continue;
+    if (prev != null) change.set(s.date, s.weight - prev);
+    prev = s.weight;
+  }
+  const rows = [...stats].reverse().slice(0, limit);
+  return (
+    <>
+    <div className={`hidden px-5 pb-2 text-xs font-semibold tracking-wide text-muted uppercase ${COLS}`}>
+      <span>Day</span><span>Weight</span><span>Activity</span><span>Protein</span><span className="text-right">Eaten</span><span className="text-right">Deficit</span>
+    </div>
+
+    <ul className="space-y-2">
+      {rows.map((s) => {
+        const d = change.get(s.date);
+        const fatG = Math.round((s.deficit / KCAL_PER_KG_FAT) * 1000);
+        return (
+          <li key={s.date}>
+            <Link href={`/log?date=${s.date}`} className={`card block py-3.5 transition hover:border-brand ${COLS}`}>
+              <div className="flex items-baseline justify-between md:block">
+                <div className="font-semibold">
+                  {new Date(s.date + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}
+                  <span className="ml-2 text-xs font-normal text-muted">Day {s.dayNo}</span>
+                </div>
+              </div>
+
+              <div className="mt-2 grid grid-cols-3 gap-2 text-sm md:contents">
+                <div>
+                  <span className="text-xs text-muted md:hidden">Weight </span>
+                  {s.weight != null ? (
+                    <div>
+                      <span className="font-semibold">{fmt(s.weight, 2)} kg</span>
+                      {d != null &&
+                        (Math.abs(d) < 0.005 ? (
+                          <span className="ml-1.5 text-xs font-semibold text-muted" title="No change">– 0.00</span>
+                        ) : (
+                          <span className={`ml-1.5 text-xs font-semibold ${d < 0 ? "text-good" : "text-bad"}`}>
+                            {d < 0 ? "▼" : "▲"} {fmt(Math.abs(d), 2)}
+                          </span>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted">–</div>
+                  )}
+                </div>
+                <div>
+                  <span className="text-xs text-muted md:hidden">Activity </span>
+                  <div>
+                    {s.steps != null ? (
+                      <>
+                        {fmt(s.steps)} steps <span className="text-xs text-muted">· {fmtKm(s.km, s.kmEstimated)}</span>
+                      </>
+                    ) : (
+                      <span className="text-muted">–</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-xs text-muted md:hidden">Protein </span>
+                  <div className={s.logged && s.protein >= p.protein_target ? "font-semibold text-good" : ""}>
+                    {s.logged ? `${fmt(s.protein)} g` : <span className="text-muted">–</span>}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-baseline justify-between md:contents">
+                <div className={`font-bold md:text-right ${intakeTone(s, p.kcal_target, p.kcal_floor)}`}>
+                  {s.logged ? `${fmt(s.intake)} kcal` : "not logged"}
+                  {s.partial && s.logged && <div className="text-xs font-normal">so far today</div>}
+                </div>
+                <div className="text-right">
+                  {s.logged && s.partial ? (
+                    <span className="text-xs text-muted">in progress</span>
+                  ) : s.logged ? (
+                    <>
+                      <div className={`font-bold ${s.deficit < 0 ? "text-bad" : ""}`}>
+                        {s.deficit < 0 ? `+${fmt(-s.deficit)} surplus` : `${fmt(s.deficit)} kcal`}
+                      </div>
+                      <div className="text-xs text-muted">
+                        <span className="md:hidden">{s.deficit < 0 ? "" : "deficit · "}</span>
+                        {s.deficit < 0 ? `≈ ${fmt(-fatG)} g gained` : `≈ ${fmt(fatG)} g fat`}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-muted">–</span>
+                  )}
+                </div>
+              </div>
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+    </>
+  );
+}

@@ -45,7 +45,8 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 - **Body progress.** Three figures drawn from your BMI (where you started, where you are now and your goal) side by
   side, plus a BMI ladder and an estimated body-fat % (from BMI and age only).
 - **Charts and weekly summary.** Weight vs plan, calories in vs out, protein, steps and distance. The weekly table
-  groups *daily averages* and *week totals* and shows the change from the week before.
+  groups *daily averages* and *week totals* and shows the change from the week before. The dashboard keeps the
+  latest 5 weeks and a *Recent days* card with the latest 5 days, each linking to the full list in History.
 - **Next event strip.** Your next dawat or birthday within a month, with your forecast weight and today's save-up.
 - **Today is "in progress".** A half-logged day never counts as a full day's deficit: totals, averages, streaks
   and fat lost only include finished days.
@@ -103,6 +104,7 @@ A month of fasting changes everything about the day, so it gets its own mode.
 - Set the first and last fast in Settings once the moon is sighted.
 
 ### History
+- Two tabs: **Days** (one row per day) and **Weeks** (the full weekly summary since you started).
 - One row per day with weight change (▼ / ▲), steps and km, protein, calories eaten and the day's deficit with its
   fat equivalent.
 - Colour-coded: **green** within target, **amber** under your minimum, **grey** over target but still a deficit,

@@ -14,6 +14,7 @@ export const SECTIONS = [
   { key: "chart_calories", label: "Calories in vs out chart" },
   { key: "chart_protein", label: "Protein chart" },
   { key: "chart_steps", label: "Steps chart" },
+  { key: "recent", label: "Recent days" },
   { key: "weekly", label: "Weekly summary" },
 ] as const;
 
