@@ -40,6 +40,8 @@ export interface Profile {
   hidden_sections: string | null;
   /** comma-separated sidebar tab keys that are switched off (see lib/tabs.ts) */
   hidden_tabs: string | null;
+  /** comma-separated dashboard card keys in the user's order (see BLOCKS in lib/sections.ts) */
+  section_order: string | null;
   /** up to 3 weight milestones, oldest date first (from the milestones table, attached by getProfile) */
   milestones: MilestoneRow[];
   /** first and last fast; null until set */

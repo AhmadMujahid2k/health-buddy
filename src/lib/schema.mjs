@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS profile (
   food_context TEXT,
   hidden_sections TEXT,            -- comma-separated dashboard sections switched off in Settings
   hidden_tabs TEXT,                -- comma-separated sidebar tabs switched off in Settings
+  section_order TEXT,              -- comma-separated dashboard cards in the user's order
   ramadan_start TEXT,              -- first fast (YYYY-MM-DD), set once the moon is sighted
   ramadan_end TEXT,                -- last fast
   latitude REAL NOT NULL DEFAULT 31.5204,  -- for sehri/iftar times (default: Lahore)
@@ -144,6 +145,7 @@ export const PROFILE_SEED = {
   food_context: null,
   hidden_sections: null,
   hidden_tabs: null,
+  section_order: null,
   ramadan_start: null,
   ramadan_end: null,
   latitude: 31.5204,
@@ -243,6 +245,7 @@ export function migrate(db) {
   for (const [c, v] of [["latitude", 31.5204], ["longitude", 74.3587], ["utc_offset", 5]])
     if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} REAL NOT NULL DEFAULT ${v}`);
   if (!cols.includes("hidden_tabs")) db.exec("ALTER TABLE profile ADD COLUMN hidden_tabs TEXT");
+  if (!cols.includes("section_order")) db.exec("ALTER TABLE profile ADD COLUMN section_order TEXT");
   // milestones used to be two fixed pairs of profile columns; move them into the milestones table
   const OLD = ["milestone", "next_milestone"];
   if (OLD.some((o) => cols.includes(`${o}_weight`))) {

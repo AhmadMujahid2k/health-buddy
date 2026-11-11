@@ -1,6 +1,7 @@
 import { updateProfile } from "@/lib/queries";
 import type { Profile } from "@/lib/types";
 import { numIn, validDate } from "@/lib/validate";
+import { blockOrder } from "@/lib/sections";
 
 /** [min, max, nullable] for each number; anything outside is rejected with the field name. */
 const NUMERIC: Record<string, [number, number, boolean]> = {
@@ -58,6 +59,8 @@ export async function PUT(req: Request) {
     } else if (k in CHOICES) {
       if (!CHOICES[k].includes(String(v))) return bad(k, `must be one of ${CHOICES[k].join(", ")}`);
       patch[k] = String(v);
+    } else if (k === "section_order") {
+      patch[k] = empty ? null : blockOrder(String(v)).join(",");
     } else if (TEXT.has(k)) {
       patch[k] = empty ? null : String(v);
     }

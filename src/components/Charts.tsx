@@ -37,9 +37,10 @@ function Panel({ title, sub, children }: { title: string; sub?: string; children
   );
 }
 
+/** The dashboard charts; with `only`, just that one chart (each is its own card on the dashboard). */
 export function Charts({
-  days, kcalTarget, proteinTarget, stepTarget, hidden = [],
-}: { days: Day[]; kcalTarget: number; proteinTarget: number; stepTarget: number; hidden?: string[] }) {
+  days, kcalTarget, proteinTarget, stepTarget, hidden = [], only,
+}: { days: Day[]; kcalTarget: number; proteinTarget: number; stepTarget: number; hidden?: string[]; only?: string }) {
   const last14 = days.slice(-14);
   const weights = days.flatMap((d) => [d.weight, d.goal]).filter((v): v is number => v != null);
   const lo = Math.floor(Math.min(...weights) - 1);
@@ -103,8 +104,9 @@ export function Charts({
           </BarChart>
         </Panel>
     ) },
-  ].filter((c) => !hidden.includes(c.key));
+  ].filter((c) => (only ? c.key === only : !hidden.includes(c.key)));
   if (!panels.length) return null;
+  if (only) return <div className="min-w-0">{panels[0].panel}</div>;
   return (
     <div className="grid min-w-0 gap-5">
       {panels.map((c) => (

@@ -10,7 +10,8 @@ import { JourneyMap } from "@/components/JourneyMap";
 import { LiveBurn } from "@/components/LiveBurn";
 import { Streaks } from "@/components/Streaks";
 import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
-import { hiddenSections } from "@/lib/sections";
+import { hiddenSections, type BlockKey } from "@/lib/sections";
+import { DashboardBlocks } from "@/components/DashboardBlocks";
 import { kindOf, planEvents } from "@/lib/events";
 import { realBurn } from "@/lib/tdee";
 import { fastDay, ramadanPhase, ramadanWeights } from "@/lib/ramadan";
@@ -21,18 +22,19 @@ import { WeeklyTable } from "@/components/WeeklyTable";
 import { weekly } from "@/lib/weekly";
 import { BodyProgress } from "@/components/BodyProgress";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
-import { Activity, AlertTriangle, CalendarHeart, Moon, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
+import { Activity, AlertTriangle, ArrowUpDown, CalendarHeart, Moon, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
 
-export default function Home() {
+export default function Home(props: PageProps<"/">) {
   return (
     <Suspense fallback={<p className="py-20 text-center text-muted">Loading dashboard…</p>}>
-      <Dashboard />
+      <Dashboard searchParams={props.searchParams} />
     </Suspense>
   );
 }
 
-async function Dashboard() {
+async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searchParams"] }) {
   await connection();
+  const arranging = (await searchParams).arrange === "1";
   const t = today();
   const { profile: p, stats } = getStats(t);
   const todayS = stats.find((s) => s.date === t) ?? stats.at(-1)!;
@@ -75,23 +77,24 @@ async function Dashboard() {
     ? planEvents(getEvents(), stats, t, current).find((e) => e.daysLeft >= 0 && (e.daysLeft <= 30 || e.bank?.today))
     : undefined;
 
-  return (
-    <>
-      <PageHeader
-        title={`Hi ${p.name ?? "there"}`}
-        subtitle={`${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · Day ${todayS.dayNo} of your journey`}
-        actions={
-          <>
-            <a href="/api/export" className="btn btn-ghost"><Download size={16} /> Export</a>
-            <Link href="/log" className="btn"><Plus size={16} /> Log food</Link>
-          </>
-        }
-      />
-
-      <div className="space-y-5">
-        {show("insights") && <InsightsTicker items={getInsights(p, stats, t)} />}
-
-        {rPhase && show("ramadan") && (
+  const chartProps = {
+    days: stats.map((s) => ({
+            date: new Date(s.date + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
+            weight: s.weight,
+            goal: s.goalPath != null ? Math.round(s.goalPath * 100) / 100 : null,
+            intake: s.logged ? Math.round(s.intake) : null,
+            burn: Math.round(s.totalBurn),
+            protein: s.logged ? Math.round(s.protein) : null,
+            steps: s.steps,
+            km: s.km != null ? Math.round(s.km * 100) / 100 : null,
+          })),
+    kcalTarget: p.kcal_target,
+    proteinTarget: p.protein_target,
+    stepTarget: p.step_target,
+  };
+  const blocks: { key: BlockKey; node: React.ReactNode }[] = [
+    { key: "insights", node: show("insights") && <InsightsTicker items={getInsights(p, stats, t)} /> },
+    { key: "ramadan", node: rPhase && show("ramadan") && (
           <Link href="/ramadan" className="card flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-sm transition hover:border-brand">
             <span className="flex items-center gap-2 font-semibold">
               <Moon size={16} className="text-brand" />
@@ -110,9 +113,8 @@ async function Dashboard() {
               </span>
             )}
           </Link>
-        )}
-
-        {nextEvent && (
+        ) },
+    { key: "events", node: nextEvent && (
           <Link href="/events" className="card flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-sm transition hover:border-brand">
             <span className="flex items-center gap-2 font-semibold">
               <CalendarHeart size={16} className="text-brand" />
@@ -135,19 +137,16 @@ async function Dashboard() {
               </span>
             )}
           </Link>
-        )}
-
-        {/* KPIs */}
-        {show("kpis") && (
+        ) },
+    { key: "kpis", node: show("kpis") && (
         <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           <KpiCard icon={Scale} label="Current weight" value={`${fmt(current, 2)} kg`} sub={`${lost >= 0 ? "−" : "+"}${fmt(Math.abs(lost), 2)} kg since start`} />
           <KpiCard icon={Activity} label="BMI" value={fmt(b, 1)} sub={bmiCategory(b)} />
           <KpiCard icon={Flame} label="Est. fat lost" value={`${fmt(totalDeficit / 7700, 2)} kg`} sub={`${fmt(totalDeficit)} kcal total deficit`} tone={totalDeficit > 0 ? "good" : undefined} />
           <KpiCard icon={TrendingDown} label="Avg deficit · 7 days" value={`${fmt(avg((s) => s.deficit))} kcal`} sub={`avg intake ${fmt(avg((s) => s.intake))} kcal`} />
         </section>
-        )}
-
-        {(showToday || showMilestone) && (
+        ) },
+    { key: "goal", node: (showToday || showMilestone) && (
         <section className={`grid gap-5 ${showToday && showMilestone ? "lg:grid-cols-3" : ""}`}>
           {/* Today */}
           {showToday && (
@@ -228,9 +227,8 @@ async function Dashboard() {
             </div>
           ) : null}
         </section>
-        )}
-
-        {show("body") && (
+        ) },
+    { key: "body", node: show("body") && (
           <BodyProgress
             heightCm={p.height_cm}
             startWeight={p.start_weight}
@@ -239,14 +237,12 @@ async function Dashboard() {
             age={ageOn(p.dob, t)}
             male={p.sex === "male"}
           />
-        )}
-
-        {show("realburn") && (() => {
+        ) },
+    { key: "realburn", node: show("realburn") && (() => {
           const rb = realBurn(stats.filter((s) => s.date <= t), t);
           return rb ? <RealBurnCard data={rb} /> : null;
-        })()}
-
-        {(showStreaks || showJourney) && (
+        })() },
+    { key: "activity", node: (showStreaks || showJourney) && (
         <section className={`grid gap-5 ${showStreaks && showJourney ? "lg:grid-cols-5" : ""}`}>
           {showStreaks && (
           <div className={showJourney ? "lg:col-span-2" : ""}>
@@ -263,27 +259,12 @@ async function Dashboard() {
           </div>
           )}
         </section>
-        )}
-
-        <Charts
-          days={stats.map((s) => ({
-            date: new Date(s.date + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" }),
-            weight: s.weight,
-            goal: s.goalPath != null ? Math.round(s.goalPath * 100) / 100 : null,
-            intake: s.logged ? Math.round(s.intake) : null,
-            burn: Math.round(s.totalBurn),
-            protein: s.logged ? Math.round(s.protein) : null,
-            steps: s.steps,
-            km: s.km != null ? Math.round(s.km * 100) / 100 : null,
-          }))}
-          kcalTarget={p.kcal_target}
-          proteinTarget={p.protein_target}
-          stepTarget={p.step_target}
-          hidden={[...hidden]}
-        />
-
-        {/* Recent days */}
-        {show("recent") && (
+        ) },
+    { key: "chart_weight", node: show("chart_weight") && <Charts {...chartProps} only="chart_weight" /> },
+    { key: "chart_calories", node: show("chart_calories") && <Charts {...chartProps} only="chart_calories" /> },
+    { key: "chart_protein", node: show("chart_protein") && <Charts {...chartProps} only="chart_protein" /> },
+    { key: "chart_steps", node: show("chart_steps") && <Charts {...chartProps} only="chart_steps" /> },
+    { key: "recent", node: show("recent") && (
         <section className="card">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-bold">Recent days</h2>
@@ -292,10 +273,8 @@ async function Dashboard() {
           <DayList profile={p} stats={stats.filter((s) => s.date <= t)} limit={5} />
           <SeeAll href="/history">Full history</SeeAll>
         </section>
-        )}
-
-        {/* Weekly */}
-        {show("weekly") && (
+        ) },
+    { key: "weekly", node: show("weekly") && (
         <section className="card overflow-x-auto">
           <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-bold">Weekly summary</h2>
@@ -304,7 +283,25 @@ async function Dashboard() {
           <WeeklyTable weeks={weeks} today={t} limit={5} />
           <SeeAll href="/history?view=weeks">{weeks.length > 5 ? `All ${weeks.length} weeks` : "Weeks in History"}</SeeAll>
         </section>
-        )}
+        ) },
+  ];
+
+  return (
+    <>
+      <PageHeader
+        title={`Hi ${p.name ?? "there"}`}
+        subtitle={`${new Date(t + "T12:00:00").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })} · Day ${todayS.dayNo} of your journey`}
+        actions={
+          <>
+            <Link href="/?arrange=1" className="btn btn-ghost" title="Change the order of the dashboard cards"><ArrowUpDown size={16} /> Rearrange</Link>
+            <a href="/api/export" className="btn btn-ghost"><Download size={16} /> Export</a>
+            <Link href="/log" className="btn"><Plus size={16} /> Log food</Link>
+          </>
+        }
+      />
+
+      <div className="space-y-5">
+        <DashboardBlocks key={`${arranging}:${p.section_order}`} blocks={blocks} saved={p.section_order} arranging={arranging} />
         <p className="text-center text-xs text-muted">
           Burn = BMR (Mifflin-St Jeor) × {p.activity_factor} + watch kcal for steps above {fmt(p.base_steps ?? 3000)} · 7,700 kcal ≈ 1 kg of fat
         </p>

@@ -50,6 +50,8 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 - **Next event strip.** Your next dawat or birthday within a month, with your forecast weight and today's save-up.
 - **Today is "in progress".** A half-logged day never counts as a full day's deficit: totals, averages, streaks
   and fat lost only include finished days.
+- **Arrange your dashboard.** Press *Rearrange* and drag the cards into the order you like (arrow buttons work on
+  touch screens). The order is saved; *Reset* goes back to the default.
 - **Choose your sections.** Switch any part of the dashboard off in Settings; the rest closes the gap. Pages you
   don't use (History, Strength, Events, Ramadan, Food library) can be hidden from the sidebar the same way.
 
