@@ -39,14 +39,16 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
   target, each with your best run.
 - **Walking journey.** Your total distance drawn as a dot travelling along a route with stops (a road trip
   between two cities by default, which you can edit), animated on load.
-- **Two milestones.** A first goal with a date, then a next goal. The plan line continues from one to the other,
-  with an on-track / behind status and the weekly pace you need.
+- **Up to three milestones.** Weights to reach by a date on the way to your final goal, added, edited and removed
+  in Settings. The dashboard follows the earliest one until its date passes, then moves to the next; the plan line
+  continues from one to the other, with an on-track / behind status and the weekly pace you need.
 - **Charts and weekly summary.** Weight vs plan, calories in vs out, protein, steps and distance. The weekly table
   groups *daily averages* and *week totals* and shows the change from the week before.
 - **Next event strip.** Your next dawat or birthday within a month, with your forecast weight and today's save-up.
 - **Today is "in progress".** A half-logged day never counts as a full day's deficit: totals, averages, streaks
   and fat lost only include finished days.
-- **Choose your sections.** Switch any part of the dashboard off in Settings; the rest closes the gap.
+- **Choose your sections.** Switch any part of the dashboard off in Settings; the rest closes the gap. Pages you
+  don't use (History, Strength, Events, Ramadan, Food library) can be hidden from the sidebar the same way.
 
 ### Your real burn
 Formulas guess what you burn. Health Buddy also **measures** it: it compares what you ate with how your smoothed

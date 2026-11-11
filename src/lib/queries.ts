@@ -1,10 +1,25 @@
 import "server-only";
 import { db } from "./db";
 import { buildStats, today } from "./calc";
-import type { DayRow, DraftItem, Entry, EntryItem, EventRow, Food, Meal, Profile } from "./types";
+import type { DayRow, DraftItem, Entry, EntryItem, EventRow, Food, Meal, MilestoneRow, Profile } from "./types";
 
 export function getProfile(): Profile {
-  return db().prepare("SELECT * FROM profile WHERE id = 1").get() as Profile;
+  const p = db().prepare("SELECT * FROM profile WHERE id = 1").get() as Omit<Profile, "milestones">;
+  return { ...p, milestones: getMilestones() };
+}
+
+export function getMilestones(): MilestoneRow[] {
+  return db().prepare("SELECT id, label, weight, date FROM milestones ORDER BY date").all() as MilestoneRow[];
+}
+
+/** Replace all milestones at once (the Settings page saves the whole list). */
+export function setMilestones(list: Omit<MilestoneRow, "id">[]) {
+  const conn = db();
+  const ins = conn.prepare("INSERT INTO milestones (label, weight, date) VALUES (@label, @weight, @date)");
+  conn.transaction(() => {
+    conn.prepare("DELETE FROM milestones").run();
+    for (const m of list) ins.run(m);
+  })();
 }
 
 export function updateProfile(patch: Partial<Profile>) {

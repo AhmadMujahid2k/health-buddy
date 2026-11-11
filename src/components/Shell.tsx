@@ -2,47 +2,57 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, CalendarHeart, Dumbbell, LayoutDashboard, Moon, Menu, PlusCircle, Settings, UtensilsCrossed, X } from "lucide-react";
+import {
+  CalendarDays, CalendarHeart, Dumbbell, LayoutDashboard, Moon, Menu, PlusCircle, Settings, UtensilsCrossed, X, type LucideIcon,
+} from "lucide-react";
 import { Logo } from "./Logo";
 import { PalettePicker, ThemeToggle } from "./ThemeToggle";
+import { TABS, type TabKey } from "@/lib/tabs";
 
-const NAV = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/log", label: "Log food", icon: PlusCircle },
-  { href: "/history", label: "History", icon: CalendarDays },
-  { href: "/strength", label: "Strength", icon: Dumbbell },
-  { href: "/events", label: "Events", icon: CalendarHeart },
-  { href: "/ramadan", label: "Ramadan", icon: Moon },
-  { href: "/foods", label: "Food library", icon: UtensilsCrossed },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+const ICONS: Record<TabKey, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  log: PlusCircle,
+  history: CalendarDays,
+  strength: Dumbbell,
+  events: CalendarHeart,
+  ramadan: Moon,
+  foods: UtensilsCrossed,
+  settings: Settings,
+};
 
-function Sidebar({ widget, onNavigate }: { widget: React.ReactNode; onNavigate?: () => void }) {
+/** The menu links, minus the tabs switched off in Settings. */
+export function NavLinks({ hidden }: { hidden: string[] }) {
   const path = usePathname();
   return (
+    <nav className="flex flex-col gap-1">
+      <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-sidebar-text/60 uppercase">Menu</p>
+      {TABS.filter((t) => !hidden.includes(t.key)).map(({ key, href, label }) => {
+        const Icon = ICONS[key];
+        const active = href === "/" ? path === "/" : path.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+              active ? "bg-sidebar-active text-sidebar-strong shadow-sm" : "hover:bg-sidebar-line hover:text-sidebar-strong"
+            }`}
+          >
+            <Icon size={18} strokeWidth={2} className={active ? "" : "text-sidebar-text/80 group-hover:text-sidebar-strong"} />
+            {label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function Sidebar({ nav, widget }: { nav: React.ReactNode; widget: React.ReactNode }) {
+  return (
     <div className="flex h-full flex-col gap-6 bg-sidebar px-4 py-5 text-sidebar-text">
-      <Link href="/" onClick={onNavigate} className="px-2">
+      <Link href="/" className="px-2">
         <Logo />
       </Link>
-      <nav className="flex flex-col gap-1">
-        <p className="px-3 pb-1 text-[11px] font-semibold tracking-wider text-sidebar-text/60 uppercase">Menu</p>
-        {NAV.map(({ href, label, icon: Icon }) => {
-          const active = href === "/" ? path === "/" : path.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              onClick={onNavigate}
-              className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                active ? "bg-sidebar-active text-sidebar-strong shadow-sm" : "hover:bg-sidebar-line hover:text-sidebar-strong"
-              }`}
-            >
-              <Icon size={18} strokeWidth={2} className={active ? "" : "text-sidebar-text/80 group-hover:text-sidebar-strong"} />
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+      {nav}
       <div className="mt-auto space-y-3">
         {widget}
         <PalettePicker />
@@ -53,7 +63,7 @@ function Sidebar({ widget, onNavigate }: { widget: React.ReactNode; onNavigate?:
   );
 }
 
-export function Shell({ children, widget }: { children: React.ReactNode; widget: React.ReactNode }) {
+export function Shell({ children, nav, widget }: { children: React.ReactNode; nav: React.ReactNode; widget: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   useEffect(() => setOpen(false), [path]);
@@ -62,7 +72,7 @@ export function Shell({ children, widget }: { children: React.ReactNode; widget:
     <div className="min-h-screen">
       {/* desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-sidebar-line md:block">
-        <Sidebar widget={widget} />
+        <Sidebar nav={nav} widget={widget} />
       </aside>
 
       {/* mobile top bar + drawer */}
@@ -75,7 +85,8 @@ export function Shell({ children, widget }: { children: React.ReactNode; widget:
       {open && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-72 shadow-2xl">
+          {/* close the drawer on any link tap, even to the page you are already on */}
+          <aside className="absolute inset-y-0 left-0 w-72 shadow-2xl" onClick={(e) => (e.target as HTMLElement).closest("a") && setOpen(false)}>
             <button
               aria-label="Close menu"
               className="absolute top-4 right-3 z-10 rounded-lg p-2 text-sidebar-strong hover:bg-sidebar-line"
@@ -83,7 +94,7 @@ export function Shell({ children, widget }: { children: React.ReactNode; widget:
             >
               <X size={20} />
             </button>
-            <Sidebar widget={widget} onNavigate={() => setOpen(false)} />
+            <Sidebar nav={nav} widget={widget} />
           </aside>
         </div>
       )}

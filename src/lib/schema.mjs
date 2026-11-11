@@ -17,12 +17,6 @@ CREATE TABLE IF NOT EXISTS profile (
   step_target INTEGER NOT NULL,
   water_target REAL NOT NULL DEFAULT 3,
   sleep_target REAL NOT NULL DEFAULT 7,
-  milestone_weight REAL,
-  milestone_date TEXT,
-  milestone_label TEXT,
-  next_milestone_weight REAL,
-  next_milestone_date TEXT,
-  next_milestone_label TEXT,
   claude_model TEXT NOT NULL DEFAULT 'sonnet',
   voice_language TEXT NOT NULL DEFAULT 'en',
   base_steps INTEGER NOT NULL DEFAULT 3000,
@@ -31,6 +25,7 @@ CREATE TABLE IF NOT EXISTS profile (
   eat_end TEXT,
   food_context TEXT,
   hidden_sections TEXT,            -- comma-separated dashboard sections switched off in Settings
+  hidden_tabs TEXT,                -- comma-separated sidebar tabs switched off in Settings
   ramadan_start TEXT,              -- first fast (YYYY-MM-DD), set once the moon is sighted
   ramadan_end TEXT,                -- last fast
   latitude REAL NOT NULL DEFAULT 31.5204,  -- for sehri/iftar times (default: Lahore)
@@ -115,6 +110,14 @@ CREATE TABLE IF NOT EXISTS workout_sets (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS workout_sets_date ON workout_sets(date);
+
+-- weight milestones on the way to the final goal (up to 3), in date order
+CREATE TABLE IF NOT EXISTS milestones (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  label TEXT,
+  weight REAL NOT NULL,
+  date TEXT NOT NULL UNIQUE
+);
 `;
 
 // Placeholder profile for a fresh install — change it on the Settings page.
@@ -133,12 +136,6 @@ export const PROFILE_SEED = {
   step_target: 8000,
   water_target: 3,
   sleep_target: 7,
-  milestone_weight: null,
-  milestone_date: null,
-  milestone_label: null,
-  next_milestone_weight: null,
-  next_milestone_date: null,
-  next_milestone_label: null,
   claude_model: "sonnet",
   base_steps: 3000,
   stride_m: 0.75,
@@ -146,6 +143,7 @@ export const PROFILE_SEED = {
   eat_end: null,
   food_context: null,
   hidden_sections: null,
+  hidden_tabs: null,
   ramadan_start: null,
   ramadan_end: null,
   latitude: 31.5204,
@@ -244,8 +242,19 @@ export function migrate(db) {
   for (const c of ["ramadan_start", "ramadan_end"]) if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} TEXT`);
   for (const [c, v] of [["latitude", 31.5204], ["longitude", 74.3587], ["utc_offset", 5]])
     if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} REAL NOT NULL DEFAULT ${v}`);
-  for (const [c, t] of [["next_milestone_weight", "REAL"], ["next_milestone_date", "TEXT"], ["next_milestone_label", "TEXT"]]) {
-    if (!cols.includes(c)) db.exec(`ALTER TABLE profile ADD COLUMN ${c} ${t}`);
+  if (!cols.includes("hidden_tabs")) db.exec("ALTER TABLE profile ADD COLUMN hidden_tabs TEXT");
+  // milestones used to be two fixed pairs of profile columns; move them into the milestones table
+  const OLD = ["milestone", "next_milestone"];
+  if (OLD.some((o) => cols.includes(`${o}_weight`))) {
+    db.transaction(() => {
+      const p = db.prepare("SELECT * FROM profile WHERE id = 1").get();
+      const empty = db.prepare("SELECT COUNT(*) n FROM milestones").get().n === 0;
+      const ins = db.prepare("INSERT OR IGNORE INTO milestones (label, weight, date) VALUES (?, ?, ?)");
+      for (const o of OLD) {
+        if (empty && p && p[`${o}_weight`] != null && p[`${o}_date`]) ins.run(p[`${o}_label`] ?? null, p[`${o}_weight`], p[`${o}_date`]);
+        for (const c of ["weight", "date", "label"]) if (cols.includes(`${o}_${c}`)) db.exec(`ALTER TABLE profile DROP COLUMN ${o}_${c}`);
+      }
+    })();
   }
   const hasProfile = db.prepare("SELECT 1 FROM profile WHERE id = 1").get();
   if (!hasProfile) {

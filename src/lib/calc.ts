@@ -45,25 +45,27 @@ export function today(): string {
 
 export type Milestone = { label: string | null; weight: number; date: string; fromWeight: number; fromDate: string };
 
-/** The milestone that applies on `date`: the first one until its date passes, then the next one (if set). */
+/**
+ * The milestone that applies on `date`: the first one until its date passes, then the next, and so on.
+ * After the last one's date it stays on the last. Each one's plan line starts where the previous one ended.
+ */
 export function activeMilestone(p: Profile, date: string): Milestone | null {
-  if (p.milestone_weight == null || !p.milestone_date) return null;
-  const first: Milestone = {
-    label: p.milestone_label, weight: p.milestone_weight, date: p.milestone_date,
-    fromWeight: p.start_weight, fromDate: p.start_date,
-  };
-  if (date <= p.milestone_date || p.next_milestone_weight == null || !p.next_milestone_date) return first;
+  const ms = p.milestones;
+  if (!ms.length) return null;
+  let i = ms.findIndex((m) => date <= m.date);
+  if (i < 0) i = ms.length - 1;
+  const prev = ms[i - 1];
   return {
-    label: p.next_milestone_label, weight: p.next_milestone_weight, date: p.next_milestone_date,
-    fromWeight: p.milestone_weight, fromDate: p.milestone_date,
+    label: ms[i].label, weight: ms[i].weight, date: ms[i].date,
+    fromWeight: prev ? prev.weight : p.start_weight, fromDate: prev ? prev.date : p.start_date,
   };
 }
 
-/** The upcoming milestone after the active one, if any. */
+/** The milestone after the active one, if any. */
 export function nextMilestone(p: Profile, date: string): Milestone | null {
   const a = activeMilestone(p, date);
-  if (!a || a.date !== p.milestone_date || p.next_milestone_weight == null || !p.next_milestone_date) return null;
-  return activeMilestone(p, addDays(p.milestone_date, 1));
+  if (!a || p.milestones.at(-1)?.date === a.date) return null;
+  return activeMilestone(p, addDays(a.date, 1));
 }
 
 /** Planned weight on `date`: a straight line from the start to each milestone in turn. */

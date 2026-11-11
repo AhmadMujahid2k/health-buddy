@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Shell } from "@/components/Shell";
 import { GoalWidget } from "@/components/GoalWidget";
+import { SidebarNav, SidebarNavFallback } from "@/components/SidebarNav";
 import { themeBootScript } from "@/components/ThemeToggle";
 
 const jakarta = Plus_Jakarta_Sans({ subsets: ["latin"], variable: "--font-jakarta" });
@@ -29,6 +30,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-full">
         <Shell
+          nav={
+            <Suspense fallback={<SidebarNavFallback />}>
+              <SidebarNav />
+            </Suspense>
+          }
           widget={
             <Suspense fallback={<div className="h-28 rounded-xl bg-sidebar-line/50" />}>
               <GoalWidget />

@@ -1,6 +1,15 @@
 export type Meal = "breakfast" | "lunch" | "dinner" | "snack" | "drink";
 export const MEALS: Meal[] = ["breakfast", "lunch", "snack", "dinner", "drink"];
 
+export interface MilestoneRow {
+  id: number;
+  label: string | null;
+  weight: number;
+  date: string;
+}
+
+export const MAX_MILESTONES = 3;
+
 export interface Profile {
   name: string | null;
   sex: "male" | "female";
@@ -16,12 +25,6 @@ export interface Profile {
   step_target: number;
   water_target: number;
   sleep_target: number;
-  milestone_weight: number | null;
-  milestone_date: string | null;
-  milestone_label: string | null;
-  next_milestone_weight: number | null;
-  next_milestone_date: string | null;
-  next_milestone_label: string | null;
   claude_model: string;
   voice_language: string;
   /** everyday steps already covered by BMR x activity_factor */
@@ -35,6 +38,10 @@ export interface Profile {
   food_context: string | null;
   /** comma-separated dashboard section keys that are switched off (see lib/sections.ts) */
   hidden_sections: string | null;
+  /** comma-separated sidebar tab keys that are switched off (see lib/tabs.ts) */
+  hidden_tabs: string | null;
+  /** up to 3 weight milestones, oldest date first (from the milestones table, attached by getProfile) */
+  milestones: MilestoneRow[];
   /** first and last fast; null until set */
   ramadan_start: string | null;
   ramadan_end: string | null;

@@ -31,10 +31,12 @@ next.setDate(next.getDate() + 70);
 
 db.prepare(
   `UPDATE profile SET name='Sam', dob='1996-04-12', height_cm=178, start_date=?, start_weight=95, goal_weight=80,
-   kcal_target=1900, protein_target=130, step_target=8000, milestone_weight=90, milestone_date=?, milestone_label='First 5 kg',
-   next_milestone_weight=85, next_milestone_date=?, next_milestone_label='Next 5 kg', eat_start='12:00', eat_end='20:30', stride_m=0.78
+   kcal_target=1900, protein_target=130, step_target=8000, eat_start='12:00', eat_end='20:30', stride_m=0.78
    WHERE id=1`,
-).run(startISO, toISO(milestone), toISO(next));
+).run(startISO);
+const addMilestone = db.prepare("INSERT INTO milestones (label, weight, date) VALUES (?, ?, ?)");
+addMilestone.run("First 5 kg", 90, toISO(milestone));
+addMilestone.run("Next 5 kg", 85, toISO(next));
 
 const food = (name) => db.prepare("SELECT * FROM foods WHERE name = ?").get(name);
 const MENUS = {
