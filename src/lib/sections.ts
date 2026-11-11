@@ -6,6 +6,7 @@ export const SECTIONS = [
   { key: "kpis", label: "Summary cards" },
   { key: "today", label: "Today" },
   { key: "milestone", label: "Milestone goal" },
+  { key: "body", label: "Body progress" },
   { key: "realburn", label: "Real burn" },
   { key: "streaks", label: "Streaks" },
   { key: "journey", label: "Walking journey" },

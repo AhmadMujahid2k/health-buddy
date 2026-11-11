@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { connection } from "next/server";
 import { getEvents, getStats } from "@/lib/queries";
-import { activeMilestone, bmi, bmiCategory, daysBetween, fmt, fmtKm, goalStatus, nextMilestone, today } from "@/lib/calc";
+import { activeMilestone, ageOn, bmi, bmiCategory, daysBetween, fmt, fmtKm, goalStatus, nextMilestone, today } from "@/lib/calc";
 import type { DayStats, Profile } from "@/lib/types";
 import { Charts } from "@/components/Charts";
 import { InsightsTicker } from "@/components/InsightsTicker";
@@ -16,6 +16,7 @@ import { realBurn } from "@/lib/tdee";
 import { fastDay, ramadanPhase, ramadanWeights } from "@/lib/ramadan";
 import { clock, hhmm } from "@/lib/prayer";
 import { RealBurnCard } from "@/components/RealBurnCard";
+import { BodyProgress } from "@/components/BodyProgress";
 import { Bar, CalorieRing, KpiCard, PageHeader, Stat } from "@/components/ui";
 import { Activity, AlertTriangle, CalendarHeart, Moon, CheckCircle2, Download, Flame, PiggyBank, Plus, Scale, TrendingDown } from "lucide-react";
 
@@ -255,6 +256,17 @@ async function Dashboard() {
             </div>
           ) : null}
         </section>
+        )}
+
+        {show("body") && (
+          <BodyProgress
+            heightCm={p.height_cm}
+            startWeight={p.start_weight}
+            currentWeight={current}
+            goalWeight={p.goal_weight}
+            age={ageOn(p.dob, t)}
+            male={p.sex === "male"}
+          />
         )}
 
         {show("realburn") && (() => {

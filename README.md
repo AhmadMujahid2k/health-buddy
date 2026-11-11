@@ -42,6 +42,8 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
 - **Up to three milestones.** Weights to reach by a date on the way to your final goal, added, edited and removed
   in Settings. The dashboard follows the earliest one until its date passes, then moves to the next; the plan line
   continues from one to the other, with an on-track / behind status and the weekly pace you need.
+- **Body progress.** Three figures drawn from your BMI (where you started, where you are now and your goal) side by
+  side, plus a BMI ladder and an estimated body-fat % (from BMI and age only).
 - **Charts and weekly summary.** Weight vs plan, calories in vs out, protein, steps and distance. The weekly table
   groups *daily averages* and *week totals* and shows the change from the week before.
 - **Next event strip.** Your next dawat or birthday within a month, with your forecast weight and today's save-up.
