@@ -38,7 +38,19 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
   const { milestones: initialMilestones, ...fields } = profile;
   const [v, setV] = useState<Record<string, string | number | null>>({ ...fields });
   const [ms, setMs] = useState(initialMilestones.map((m) => ({ label: m.label ?? "", weight: String(m.weight), date: m.date })));
+  // what's saved on the server, so Save only sends what changed here (and can't undo changes made elsewhere)
+  const [base, setBase] = useState({ v, ms });
   const [saved, setSaved] = useState(false);
+  const filledMs = ms.filter((m) => m.weight !== "" || m.date !== "" || m.label !== "");
+  // a milestone heavier than the one before it (in date order) makes the plan line go up: allowed, but flagged
+  const heavier = new Set(
+    filledMs
+      .map((m, i) => ({ i: ms.indexOf(m), date: m.date, w: Number(m.weight) }))
+      .filter((m) => m.date && m.w)
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .filter((m, k, arr) => m.w > (k ? arr[k - 1].w : Number(v.start_weight)))
+      .map((m) => m.i),
+  );
   const hidden = hiddenSections(v.hidden_sections as string | null);
   const hiddenTabs = hiddenSections(v.hidden_tabs as string | null);
   const toggle = (field: "hidden_sections" | "hidden_tabs", set: Set<string>, key: string) => {
@@ -136,6 +148,12 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
               >
                 <Trash2 size={16} /> Remove
               </button>
+              {heavier.has(i) && (
+                <p className="text-xs text-warn sm:col-span-4">
+                  Heavier than the step before it, so the plan line goes up here. Fine for maintenance or bulking; check
+                  the weight if you meant to lose.
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -167,13 +185,18 @@ export function SettingsClient({ profile, startBmr }: { profile: Profile; startB
       <button
         className="btn"
         onClick={async () => {
-          const put = (url: string, body: unknown) =>
-            fetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-          // profile first: milestone dates are checked against the start date saved there
-          const err =
-            (await failed(await put("/api/profile", v))) ??
-            (await failed(await put("/api/milestones", { milestones: ms.filter((m) => m.weight !== "" || m.date !== "" || m.label !== "") })));
-          if (err) return alert(`Not saved: ${err}`);
+          // one request: only the fields changed on this page, plus the milestones if they changed;
+          // the server checks them together and saves both or neither
+          const body: Record<string, unknown> = {};
+          for (const [k, val] of Object.entries(v)) if (String(val ?? "") !== String(base.v[k] ?? "")) body[k] = val;
+          if (JSON.stringify(filledMs) !== JSON.stringify(base.ms)) body.milestones = filledMs;
+          if (Object.keys(body).length) {
+            const err = await failed(
+              await fetch("/api/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+            );
+            if (err) return alert(`Not saved: ${err}`);
+          }
+          setBase({ v, ms: filledMs });
           setSaved(true);
           router.refresh();
         }}

@@ -30,6 +30,14 @@ export function updateProfile(patch: Partial<Profile>) {
     .run(patch);
 }
 
+/** Save profile changes and (optionally) the milestone list together, so one can't be saved without the other. */
+export function saveProfile(patch: Partial<Profile>, milestones?: Omit<MilestoneRow, "id">[]) {
+  db().transaction(() => {
+    updateProfile(patch);
+    if (milestones) setMilestones(milestones);
+  })();
+}
+
 export function getDays(): DayRow[] {
   return db().prepare("SELECT * FROM days ORDER BY date").all() as DayRow[];
 }

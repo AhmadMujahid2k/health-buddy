@@ -254,7 +254,14 @@ export function migrate(db) {
       const empty = db.prepare("SELECT COUNT(*) n FROM milestones").get().n === 0;
       const ins = db.prepare("INSERT OR IGNORE INTO milestones (label, weight, date) VALUES (?, ?, ?)");
       for (const o of OLD) {
-        if (empty && p && p[`${o}_weight`] != null && p[`${o}_date`]) ins.run(p[`${o}_label`] ?? null, p[`${o}_weight`], p[`${o}_date`]);
+        if (empty && p && p[`${o}_weight`] != null && p[`${o}_date`]) {
+          const [label, weight, date] = [p[`${o}_label`] ?? null, p[`${o}_weight`], p[`${o}_date`]];
+          // two old milestones on the same date can't both be kept (dates are unique); say so rather than lose it quietly
+          if (ins.run(label, weight, date).changes === 0)
+            console.warn(`Milestone "${label ?? ""}" (${weight} kg, ${date}) shares a date with another and was not migrated.`);
+          else if (date <= p.start_date)
+            console.warn(`Milestone "${label ?? ""}" (${date}) is on or before the start date; fix it in Settings → Milestones.`);
+        }
         for (const c of ["weight", "date", "label"]) if (cols.includes(`${o}_${c}`)) db.exec(`ALTER TABLE profile DROP COLUMN ${o}_${c}`);
       }
     })();

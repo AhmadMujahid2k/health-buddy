@@ -1,9 +1,12 @@
-import { updateProfile } from "@/lib/queries";
+import { getProfile, saveProfile } from "@/lib/queries";
+import { cleanMilestones, type MilestoneInput } from "@/lib/milestones";
 import type { Profile } from "@/lib/types";
 import { numIn, validDate } from "@/lib/validate";
 import { blockOrder } from "@/lib/sections";
 
-/** [min, max, nullable] for each number; anything outside is rejected with the field name. */
+/**
+ * PUT accepts any subset of the profile fields below, plus `milestones` (the whole list) to save both at once.
+ * [min, max, nullable] for each number; anything outside is rejected with the field name. */
 const NUMERIC: Record<string, [number, number, boolean]> = {
   height_cm: [100, 250, false],
   start_weight: [30, 300, false],
@@ -65,6 +68,18 @@ export async function PUT(req: Request) {
       patch[k] = empty ? null : String(v);
     }
   }
-  updateProfile(patch as Partial<Profile>);
+  // milestones are checked against the start date being saved (or the current one) and written in the same transaction
+  const current = getProfile();
+  const start = (patch.start_date as string | undefined) ?? current.start_date;
+  let milestones: MilestoneInput[] | undefined;
+  if (b.milestones !== undefined) {
+    const list = cleanMilestones(b.milestones, start);
+    if (typeof list === "string") return Response.json({ error: list }, { status: 400 });
+    milestones = list;
+  } else if (patch.start_date) {
+    const early = current.milestones.find((m) => m.date <= start);
+    if (early) return bad("start_date", `must be before your first milestone (${early.date})`);
+  }
+  saveProfile(patch as Partial<Profile>, milestones);
   return Response.json({ ok: true });
 }

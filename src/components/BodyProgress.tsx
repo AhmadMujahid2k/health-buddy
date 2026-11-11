@@ -86,7 +86,14 @@ const BANDS = [
   { to: 40, label: "Obese II", cls: "bg-bad/75" },
   { to: HI, label: "Obese III", cls: "bg-bad" },
 ];
-const pos = (bmi: number) => `${(Math.min(HI, Math.max(LO, bmi)) - LO) / (HI - LO) * 100}%`;
+const pct = (bmi: number) => ((Math.min(HI, Math.max(LO, bmi)) - LO) / (HI - LO)) * 100;
+const pos = (bmi: number) => `${pct(bmi)}%`;
+
+/** Where each ladder label sits: "now" above the bar, the others below; Goal drops to a second row if it would overlap Start. */
+function labelRows(start: number, goal: number): Record<string, "above" | "below" | "below2"> {
+  const near = Math.abs(pct(start) - pct(goal)) < 12;
+  return { now: "above", start: "below", goal: near ? "below2" : "below" };
+}
 
 const FIGURES = [
   { key: "start", x: 70 },
@@ -110,6 +117,7 @@ export function BodyProgress({
     { key: "goal", label: "Goal", weight: goalWeight },
   ].map((r) => ({ ...r, bmi: r.weight / m2, fat: bodyFat(r.weight / m2, age, male) }));
   const [start, now, goal] = rows;
+  const labelRow = labelRows(start.bmi, goal.bmi);
 
   return (
     <section className="card">
@@ -165,13 +173,13 @@ export function BodyProgress({
 
           <div>
             <div className="mb-1.5 text-xs font-medium text-muted">BMI ladder</div>
-            <div className="relative pt-5 pb-5">
+            <div className={`relative pt-5 ${labelRow.goal === "below2" ? "pb-8" : "pb-5"}`}>
               <div className="flex h-2.5 overflow-hidden rounded-full">
                 {BANDS.map((b, i) => (
                   <div key={b.label} className={b.cls} style={{ width: `${((b.to - (i ? BANDS[i - 1].to : LO)) / (HI - LO)) * 100}%` }} />
                 ))}
               </div>
-              {/* start and goal labels sit below the bar, now above, so close markers don't collide */}
+              {/* labels split above / below the bar so close markers don't collide (see labelRows) */}
               {rows.map((r) => (
                 <div key={r.key} className="absolute top-5 -translate-x-1/2" style={{ left: pos(r.bmi) }}>
                   <div
@@ -179,7 +187,7 @@ export function BodyProgress({
                       r.key === "now" ? "border-card bg-brand ring-2 ring-brand" : r.key === "start" ? "border-muted bg-card" : "border-good bg-card"
                     }`}
                   />
-                  <div className={`absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold whitespace-nowrap ${r.key === "now" ? "-top-5 text-brand" : "top-3.5 text-muted"}`}>
+                  <div className={`absolute left-1/2 -translate-x-1/2 text-[10px] font-semibold whitespace-nowrap ${{ above: "-top-5", below: "top-3.5", below2: "top-7" }[labelRow[r.key]]} ${r.key === "now" ? "text-brand" : "text-muted"}`}>
                     {r.label}
                   </div>
                 </div>

@@ -46,8 +46,7 @@ export function DashboardBlocks({ blocks, saved, arranging }: { blocks: Block[];
     );
     setSaving(false);
     if (err) return alert(`Not saved: ${err}`);
-    router.push("/");
-    router.refresh();
+    router.push("/"); // the dashboard is dynamic, so this already loads the new order
   };
 
   // put the rearranged cards back into the slots the visible cards had, so hidden ones stay where they were
