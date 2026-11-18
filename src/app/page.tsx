@@ -9,7 +9,7 @@ import { InsightsTicker } from "@/components/InsightsTicker";
 import { JourneyMap } from "@/components/JourneyMap";
 import { LiveBurn } from "@/components/LiveBurn";
 import { Streaks } from "@/components/Streaks";
-import { getInsights, getStreaks, JOURNEY } from "@/lib/insights";
+import { getInsights, getStreaks, journeyState } from "@/lib/insights";
 import { BLOCKS, hiddenSections, type BlockKey } from "@/lib/sections";
 import { DashboardBlocks } from "@/components/DashboardBlocks";
 import { kindOf, planEvents } from "@/lib/events";
@@ -254,8 +254,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/">["searc
         {showJourney && (
         <div className={`min-w-0 ${showStreaks ? "lg:col-span-3" : ""}`}>
           <JourneyMap
-            name={JOURNEY.name}
-            stops={JOURNEY.stops}
+            state={journeyState(stats, t)}
             totalKm={stats.filter((s) => s.date <= t).reduce((a, s) => a + (s.km ?? 0), 0)}
           />
         </div>

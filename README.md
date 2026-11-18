@@ -37,8 +37,10 @@ runs on your own machine, and keeps your data in a single SQLite file you own.
   the plan reaches your next whole kilo, best day, protein average, and fun comparisons for your total deficit.
 - **Streaks.** Days in a row in a deficit, within your calorie target, at your protein target, and at your step
   target, each with your best run.
-- **Walking journey.** Your total distance drawn as a dot travelling along a route with stops (a road trip
-  between two cities by default, which you can edit), animated on load.
+- **Walking journey.** Your total distance drawn as a dot travelling along a route with stops, animated on load.
+  Routes run one after another (Lahore → Islamabad, then Islamabad → Khunjerab Pass on the Karakoram Highway by
+  default, editable in `src/lib/insights.ts`). Finishing one shows a celebration banner for a day and adds it to
+  your list of finished journeys; after the last route the series starts again as round 2.
 - **Up to three milestones.** Weights to reach by a date on the way to your final goal, added, edited and removed
   in Settings. The dashboard follows the earliest one until its date passes, then moves to the next; the plan line
   continues from one to the other, with an on-track / behind status and the weekly pace you need.

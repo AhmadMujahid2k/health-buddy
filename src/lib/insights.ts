@@ -41,27 +41,86 @@ export function getStreaks(p: Profile, stats: DayStats[], today: string): Streak
 
 // ── Walking journey ────────────────────────────────────────────────────
 
-/** A route to "walk" with your total distance. Edit the stops to use your own route. */
-export const JOURNEY = {
-  name: "Lahore → Islamabad (M-2)",
-  stops: [
-    { name: "Lahore", km: 0 },
-    { name: "Sheikhupura", km: 35 },
-    { name: "Pindi Bhattian", km: 110 },
-    { name: "Bhera", km: 190 },
-    { name: "Kallar Kahar", km: 245 },
-    { name: "Chakri", km: 330 },
-    { name: "Islamabad", km: 375 },
-  ],
-};
+export type JourneyStop = { name: string; km: number };
+export type Journey = { name: string; stops: JourneyStop[] };
 
-export function journeyProgress(totalKm: number) {
-  const length = JOURNEY.stops.at(-1)!.km;
-  const lap = Math.floor(totalKm / length);
-  const pos = totalKm - lap * length;
-  const next = JOURNEY.stops.find((s) => s.km > pos) ?? JOURNEY.stops.at(-1)!;
-  const passed = [...JOURNEY.stops].reverse().find((s) => s.km <= pos) ?? JOURNEY.stops[0];
-  return { length, lap, pos, next, passed, toNext: next.km - pos };
+/**
+ * Routes walked one after another with your total distance. When the last one is finished the series starts again
+ * (round 2). Edit or add routes here; `km` is the road distance from the route's start, and the last stop is the end.
+ */
+export const JOURNEYS: Journey[] = [
+  {
+    name: "Lahore → Islamabad (M-2)",
+    stops: [
+      { name: "Lahore", km: 0 },
+      { name: "Sheikhupura", km: 35 },
+      { name: "Pindi Bhattian", km: 110 },
+      { name: "Bhera", km: 190 },
+      { name: "Kallar Kahar", km: 245 },
+      { name: "Chakri", km: 330 },
+      { name: "Islamabad", km: 375 },
+    ],
+  },
+  {
+    name: "Islamabad → Khunjerab Pass (KKH)",
+    stops: [
+      { name: "Islamabad", km: 0 },
+      { name: "Abbottabad", km: 120 },
+      { name: "Besham", km: 275 },
+      { name: "Chilas", km: 475 },
+      { name: "Gilgit", km: 605 },
+      { name: "Hunza", km: 705 },
+      { name: "Sost", km: 790 },
+      { name: "Khunjerab", km: 875 },
+    ],
+  },
+];
+
+const legKm = (j: Journey) => j.stops.at(-1)!.km;
+
+export interface FinishedJourney {
+  name: string;
+  km: number;
+  start: string;
+  end: string;
+}
+
+export interface JourneyState {
+  journey: Journey;
+  round: number; // 1 the first time through the series
+  pos: number; // km along the current journey
+  finished: FinishedJourney[]; // oldest first
+  /** The journey finished today or yesterday, to celebrate on the dashboard. */
+  justArrived: FinishedJourney | null;
+}
+
+/** Where the total distance up to `today` puts you in the series, and which journeys you finished on which day. */
+export function journeyState(stats: DayStats[], today: string): JourneyState {
+  const days = stats.filter((s) => s.date <= today);
+  const finished: FinishedJourney[] = [];
+  let i = 0; // index into the series, counting repeats
+  let done = 0; // km covered by finished journeys
+  let legStart = days[0]?.date ?? today;
+  let total = 0;
+  for (const d of days) {
+    total += d.km ?? 0;
+    // one big day could finish more than one journey
+    while (total >= done + legKm(JOURNEYS[i % JOURNEYS.length])) {
+      const j = JOURNEYS[i % JOURNEYS.length];
+      done += legKm(j);
+      finished.push({ name: j.name, km: legKm(j), start: legStart, end: d.date });
+      legStart = d.date;
+      i++;
+    }
+  }
+  const last = finished.at(-1);
+  return {
+    journey: JOURNEYS[i % JOURNEYS.length],
+    round: Math.floor(i / JOURNEYS.length) + 1,
+    pos: total - done,
+    finished,
+    justArrived: last && last.end >= addDays(today, -1) ? last : null,
+  };
 }
 
 // ── Rotating insights ──────────────────────────────────────────────────

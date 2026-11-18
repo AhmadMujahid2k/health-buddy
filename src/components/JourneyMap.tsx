@@ -1,18 +1,20 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { MapPin } from "lucide-react";
-
-type Stop = { name: string; km: number };
+import { CheckCircle2, MapPin, PartyPopper } from "lucide-react";
+import type { JourneyState } from "@/lib/insights";
 
 const ROUTE = "M34,74 C140,46 220,104 304,74 S470,44 574,72";
 
-/** Total distance walked, drawn as a dot travelling along a route. The dot animates in on load. */
-export function JourneyMap({
-  name, stops, totalKm,
-}: { name: string; stops: Stop[]; totalKm: number }) {
+const day = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const endOf = (name: string) => name.split("→").at(-1)!.replace(/\(.*\)/, "").trim();
+
+/**
+ * Total distance walked, drawn as a dot travelling along the current route. The dot animates in on load. Finished
+ * routes are listed underneath, and the day you arrive (and the day after) gets a celebration banner.
+ */
+export function JourneyMap({ state, totalKm }: { state: JourneyState; totalKm: number }) {
+  const { journey: { name, stops }, round, pos, finished, justArrived } = state;
   const length = stops.at(-1)!.km;
-  const lap = Math.floor(totalKm / length);
-  const pos = totalKm - lap * length;
   const target = pos / length;
   const next = stops.find((s) => s.km > pos) ?? stops.at(-1)!;
 
@@ -46,12 +48,21 @@ export function JourneyMap({
         <h2 className="font-bold">Walking journey</h2>
         <span className="text-xs text-muted">
           {name}
-          {lap > 0 && ` · lap ${lap + 1}`}
+          {round > 1 && ` · round ${round}`}
         </span>
       </div>
+      {justArrived && (
+        <div className="my-2 flex items-center gap-2.5 rounded-xl bg-good/15 px-3 py-2 text-sm">
+          <PartyPopper size={18} className="shrink-0 text-good" />
+          <span>
+            <b>You walked to {endOf(justArrived.name)}!</b> {justArrived.km} km, {day(justArrived.start)} – {day(justArrived.end)}.
+            Next up: {name}.
+          </span>
+        </div>
+      )}
       <p className="text-sm text-muted">
         <b className="text-foreground">{totalKm.toFixed(1)} km</b> walked ·{" "}
-        {pos < length ? <>{(next.km - pos).toFixed(1)} km to <b className="text-foreground">{next.name}</b></> : "arrived!"}
+        {(next.km - pos).toFixed(1)} km to <b className="text-foreground">{next.name}</b>
       </p>
 
       <div className="-mx-1 overflow-x-auto px-1">
@@ -90,7 +101,18 @@ export function JourneyMap({
         )}
       </svg>
       </div>
-      <div className="mt-1 flex items-center gap-1.5 text-[11px] text-muted">
+      {finished.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-2">
+          {finished.map((f, i) => (
+            <li key={i} className="flex items-center gap-1.5 rounded-full bg-card-2 px-2.5 py-1 text-[11px] text-muted">
+              <CheckCircle2 size={12} className="text-good" />
+              <span className="font-semibold text-foreground">{f.name.replace(/\s*\(.*\)/, "")}</span>
+              {f.km} km · {day(f.start)} – {day(f.end)}
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted">
         <MapPin size={12} /> Road distances are approximate
       </div>
     </section>
