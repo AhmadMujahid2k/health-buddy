@@ -187,6 +187,10 @@ Meals are `breakfast`, `lunch`, `snack`, `dinner` or `drink`. Dates can't be in 
 range-checked, and a bad request gets a `400` with the reason. Other routes: `GET /api/export` (CSV),
 `PUT /api/days/:date`, `PUT /api/profile`, `/api/foods`, `/api/entries/:id`, `/api/items/:id`.
 
+`GET /api/widget` returns today at a glance for phone widgets: calories eaten, target and left, protein, steps, the
+day's burn, your latest weight and the current milestone (kg and days left, kg ahead of the plan line). A sync script
+can copy it somewhere your phone can read, so a widget works without reaching your computer.
+
 ## Getting started
 
 **Requirements:** Node 20+. For the optional features: the Claude Code CLI (logged in), and a C/C++ toolchain + CMake
